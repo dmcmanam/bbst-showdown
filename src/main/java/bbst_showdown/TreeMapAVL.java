@@ -1,4 +1,4 @@
-package dmcmanam.bbst_showdown;
+package bbst_showdown;
 
 import java.util.AbstractMap;
 import java.util.Comparator;
