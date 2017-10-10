@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.NavigableSet;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -61,8 +62,8 @@ public class TreeMapAVL<K,V>
         V value;
         Entry<K,V> left = null;
         Entry<K,V> right = null;
-        Entry<K,V> parent;
-        int balance = 0;
+        Entry<K,V> parent = null;
+        byte balance = 0;
 
         /**
          * Make a new cell with given key, value, and parent, and with
@@ -215,16 +216,16 @@ public class TreeMapAVL<K,V>
                     return t.setValue(value);
             } while (t != null);
         }
+        
         Entry<K,V> e = new Entry<>(key, value, parent);
         if (cmp < 0) {
             parent.left = e;
             parent.balance--;
-            fixAfterInsertion(parent);
         } else {
             parent.right = e;
             parent.balance++;
-            fixAfterInsertion(parent);
         }
+        fixAfterInsertion(parent);
         
         size++;
         modCount++;
@@ -240,7 +241,6 @@ public class TreeMapAVL<K,V>
     }
     
     private void fixAfterInsertion(Entry<K,V> x) {
-    	// TODO
     		while (x.balance != 0) {
     			if (x.balance == 2) { // right heavy by 2? 
     				if (x.right.balance == 1) {
@@ -259,8 +259,7 @@ public class TreeMapAVL<K,V>
     					else if (rlBalance == -1)
     						x.right.balance = 1;
     					
-    					//rotateRight(x.right);
-    					//rotateLeft(x);
+    					//These 2 calls would produce the same result: rotateRight(x.right); rotateLeft(x);
     					rotateRightLeft(x);
     					break;
     				}
@@ -429,15 +428,91 @@ public class TreeMapAVL<K,V>
 
 	@Override
 	public K firstKey() {
-		// TODO Auto-generated method stub
-		return null;
+		return key(getFirstEntry());
 	}
-
+	
 	@Override
 	public K lastKey() {
-		// TODO Auto-generated method stub
-		return null;
+		return key(getLastEntry());
 	}
+	
+	/**
+     * Returns the key corresponding to the specified Entry.
+     * @throws NoSuchElementException if the Entry is null
+     */
+    static <K> K key(Entry<K,?> e) {
+        if (e==null)
+            throw new NoSuchElementException();
+        return e.key;
+    }
+	
+	/**
+     * Returns the first Entry in the TreeMap (according to the TreeMap's
+     * key-sort function).  Returns null if the TreeMap is empty.
+     */
+    final Entry<K,V> getFirstEntry() {
+        Entry<K,V> p = root;
+        if (p != null)
+            while (p.left != null)
+                p = p.left;
+        return p;
+    }
+
+    /**
+     * Returns the last Entry in the TreeMap (according to the TreeMap's
+     * key-sort function).  Returns null if the TreeMap is empty.
+     */
+    final Entry<K,V> getLastEntry() {
+        Entry<K,V> p = root;
+        if (p != null)
+            while (p.right != null)
+                p = p.right;
+        return p;
+    }
+    
+    /**
+     * Returns the successor of the specified Entry, or null if no such.
+     */
+    static <K,V> Entry<K,V> successor(Entry<K,V> t) {
+        if (t == null)
+            return null;
+        else if (t.right != null) {
+            Entry<K,V> p = t.right;
+            while (p.left != null)
+                p = p.left;
+            return p;
+        } else {
+            Entry<K,V> p = t.parent;
+            Entry<K,V> ch = t;
+            while (p != null && ch == p.right) {
+                ch = p;
+                p = p.parent;
+            }
+            return p;
+        }
+    }
+
+    /**
+     * Returns the predecessor of the specified Entry, or null if no such.
+     */
+    static <K,V> Entry<K,V> predecessor(Entry<K,V> t) {
+        if (t == null)
+            return null;
+        else if (t.left != null) {
+            Entry<K,V> p = t.left;
+            while (p.right != null)
+                p = p.right;
+            return p;
+        } else {
+            Entry<K,V> p = t.parent;
+            Entry<K,V> ch = t;
+            while (p != null && ch == p.left) {
+                ch = p;
+                p = p.parent;
+            }
+            return p;
+        }
+    }
 
 	@Override
 	public java.util.Map.Entry<K, V> lowerEntry(K key) {
@@ -576,9 +651,9 @@ public class TreeMapAVL<K,V>
 	
 	public static void main(String [] args) {
 		// TODO convert to test platform
-		Map<Integer, Integer> x = new TreeMap<>();
+		Map<Integer, Integer> x = new TreeMapAVL<>();
 		
-		System.out.println(lookup(x) + " ms to lookup " + x.size()+ " elements.");
+		System.out.println(lookup(x) + " ms " + x.size()+ " elements..");
 		
 		//System.out.println(insertRandomOrder(x) + " ms to insert " + x.size()+ " elements.");
 	}
