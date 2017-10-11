@@ -258,8 +258,9 @@ public class TreeMapAVL<K,V>
     					else if (rlBalance == -1)
     						x.right.balance = 1;
     					
-    					//These 2 calls would produce the same result: rotateRight(x.right); rotateLeft(x);
-    					rotateRightLeft(x);
+    					//These 2 calls would produce the same result: 
+    					rotateRight(x.right); rotateLeft(x);
+    					//rotateRightLeft(x);
     					break;
     				}
     			} else if (x.balance == -2) {
@@ -389,18 +390,130 @@ public class TreeMapAVL<K,V>
         return oldValue;
     }
 
-    /**
-     * Compares two keys using the correct comparison method for this TreeMap.
-     */
-    @SuppressWarnings("unchecked")
-    final int compare(Object k1, Object k2) {
-        return comparator==null ? ((Comparable<? super K>)k1).compareTo((K)k2)
-            : comparator.compare((K)k1, (K)k2);
-    }
-    
     private void deleteEntry(Entry<K, V> p) {
-		// TODO Auto-generated method stub
+        modCount++;
+        size--;
+
+        // If strictly internal, copy successor's element to p and then make p point to successor.
+        if (p.left != null && p.right != null) {
+            Entry<K,V> s = successor(p);
+            p.key = s.key;
+            p.value = s.value;
+            p = s;
+        } // p has 2 children
+
+        // Start fixup at replacement node, if it exists.
+        Entry<K,V> replacement = (p.left != null ? p.left : p.right);
+
+        if (replacement != null) {
+            // Link replacement to parent
+            replacement.parent = p.parent;
+            if (p.parent == null) {
+                root = replacement;
+                throw new NullPointerException();
+            } else if (p == p.parent.left) {
+                p.parent.left  = replacement;
+                p.parent.balance++;
+            } else {
+                p.parent.right = replacement;
+                p.parent.balance--;
+            }
+
+            // Null out links so they are OK to use by fixAfterDeletion.
+            p.left = p.right = p.parent = null;
+
+            if (Math.abs(replacement.parent.balance) != 1)
+            		fixAfterDeletion(replacement.parent);
+        } else if (p.parent == null) { // return if we are the only node.
+            root = null;
+		} else { // No children.
+			Entry<K, V> fixPoint = p.parent;
+
+			if (p == p.parent.left) {
+				p.parent.balance++;
+				p.parent.left = null;
+			} else if (p == p.parent.right) {
+				p.parent.balance--;
+				p.parent.right = null;
+			}
+			p.parent = null;
+
+			if (Math.abs(fixPoint.balance) != 1)
+				fixAfterDeletion(fixPoint);
+        }
 	}
+    
+    
+    private void fixAfterDeletion(Entry<K,V> x) {
+    		// TODO
+    		while (true) {
+    			if (x.balance == 2) { // right heavy by 2? 
+    				if (x.right.balance == 1) {
+    					x.balance = 0;
+    					x.right.balance = 0;
+    					rotateLeft(x);
+    					x = x.parent;
+    				} else if (x.right.balance == 0){ 
+    					x.balance = 1;
+    					x.right.balance = -1;
+    					rotateLeft(x);
+    					break;
+    				} else { // x.right.balance = -1
+    					int rlBalance = x.right.left.balance;
+    					x.right.left.balance = 0;
+    					x.right.balance = 0;
+    					x.balance = 0;
+    					if (rlBalance == 1)
+    						x.balance = -1;
+    					else if (rlBalance == -1)
+    						x.right.balance = 1;
+    					
+    					rotateRight(x.right); 
+    					rotateLeft(x);
+    					x = x.parent;
+    				}
+    			} else if (x.balance == -2) {
+    				if (x.left.balance == -1) {
+    					x.balance = 0;
+    					x.left.balance = 0;
+    					rotateRight(x);
+    					x = x.parent;
+    				} else if (x.left.balance == 0){ 
+    					x.balance = -1;
+    					x.left.balance = 1;
+    					rotateRight(x);
+    					break;
+    				} else { //  (x.left.balance == 1)
+    					int lrBalance = x.left.right.balance;
+    					x.left.right.balance = 0;
+    					x.left.balance = 0;
+    					x.balance = 0;
+    					if (lrBalance == 1)
+    						x.left.balance = -1;
+    					else if (lrBalance == -1)
+    						x.balance = 1;
+    					
+    					rotateLeft(x.left);
+    					rotateRight(x);
+    					x = x.parent;
+    				} 
+    			}
+    			
+    			if (x == root)
+    				break;
+    			if (x.parent.left == x) {
+    				x.parent.balance++;
+    				if (x.parent.balance == 1)
+    					break;
+    			} else { 
+    				x.parent.balance--;
+    				if (x.parent.balance == -1)
+    					break;
+    			}
+    			
+    			x = x.parent;
+    		}
+    }
     
 	/**
      * Removes all of the mappings from this map.
@@ -419,6 +532,14 @@ public class TreeMapAVL<K,V>
         return (o1==null ? o2==null : o1.equals(o2));
     }
 
+	/**
+	 * Compares two keys using the correct comparison method for this TreeMap.
+	 */
+	@SuppressWarnings("unchecked")
+	final int compare(Object k1, Object k2) {
+	    return comparator==null ? ((Comparable<? super K>)k1).compareTo((K)k2)
+	        : comparator.compare((K)k1, (K)k2);
+	}
 	@Override
 	public Comparator<? super K> comparator() {
 		// TODO Auto-generated method stub
@@ -652,7 +773,7 @@ public class TreeMapAVL<K,V>
 		// TODO convert to test platform
 		Map<Integer, Integer> x = new TreeMapAVL<>();
 		
-		System.out.println(lookup(x) + " ms " + x.size()+ " elements..");
+		System.out.println(deleteRandomOrder(x) + " ms " + x.size()+ " elements..");
 		
 		//System.out.println(insertRandomOrder(x) + " ms to insert " + x.size()+ " elements.");
 	}
@@ -664,6 +785,31 @@ public class TreeMapAVL<K,V>
 			int next = r.nextInt();
 			x.put(next, next);
 		}
+		long stop = System.currentTimeMillis();
+		return stop - start;
+	}
+	
+	public static long deleteRandomOrder(Map<Integer, Integer> x) {
+		java.util.Random r = new java.util.Random();
+		Integer [] inserted = new Integer[500000];
+		for(Integer i=0; i < 500000; ) {
+			Integer next = r.nextInt();
+			Integer previous = x.put(next, next);
+			if (previous == null) {
+				inserted[i] = next;
+				i++;
+			}
+		}
+		
+		long start = System.currentTimeMillis();
+		
+		for(Integer i=0; i < 100000; i++) {
+			//System.out.println("Deleting: " + i + ":" + inserted[i]);
+			Integer result = x.remove(inserted[i]);
+			if (result == null)
+				System.err.println("Error.");
+		}
+		
 		long stop = System.currentTimeMillis();
 		return stop - start;
 	}
