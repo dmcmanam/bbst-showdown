@@ -503,7 +503,7 @@ public class TreeMapAVL<K,V>
             replacement.parent = p.parent;
             if (p.parent == null) {
                 root = replacement;
-                throw new NullPointerException();
+                return;
             } else if (p == p.parent.left) {
                 p.parent.left  = replacement;
                 p.parent.balance++;
@@ -591,7 +591,7 @@ public class TreeMapAVL<K,V>
     				} 
     			}
     			
-    			if (x == root)
+    			if (x.parent == null)
     				break;
     			if (x.parent.left == x) {
     				x.parent.balance++;
@@ -901,50 +901,12 @@ public class TreeMapAVL<K,V>
 		// TODO experimenting to better understand, later move to test/benchmark area
 		TreeMapAVL<Integer, Integer> x = new TreeMapAVL<>();
 		
-		System.out.println(insertRandomOrder(x) + " ms ");
-		
-		//System.out.println(insertRandomOrder(x) + " ms to insert " + x.size()+ " elements.");
-	}
-	
-	public static long insertRandomOrder(Map<Integer, Integer> x) {
-		long start = System.currentTimeMillis();
-		java.util.Random r = new java.util.Random();
-		for(Integer i=0; i < 1000; i++) {
-			int next = r.nextInt();
-			x.put(next, next);
-		}
-		long stop = System.currentTimeMillis();
-		return stop - start;
-	}
-	
-	public static long deleteRandomOrder(Map<Integer, Integer> x) {
-		java.util.Random r = new java.util.Random();
-		Integer [] inserted = new Integer[500000];
-		for(Integer i=0; i < 500000; ) {
-			Integer next = r.nextInt();
-			Integer previous = x.put(next, next);
-			if (previous == null) {
-				inserted[i] = next;
-				i++;
-			}
-		}
-		
-		long start = System.currentTimeMillis();
-		
-		for(Integer i=0; i < 100000; i++) {
-			//System.out.println("Deleting: " + i + ":" + inserted[i]);
-			Integer result = x.remove(inserted[i]);
-			if (result == null)
-				System.err.println("Error.");
-		}
-		
-		long stop = System.currentTimeMillis();
-		return stop - start;
+		System.out.println(insertInOrder(x) + " ms ");
 	}
 	
 	public static long insertInOrder(Map<Integer, Integer> x) {
 		long start = System.currentTimeMillis();
-		for(Integer i=0; i < 1000000; i++) {
+		for(Integer i=0; i < 10000000; i++) {
 			x.put(i, i);
 		}
 		long stop = System.currentTimeMillis();
