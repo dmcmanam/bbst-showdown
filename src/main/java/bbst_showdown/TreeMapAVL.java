@@ -9,6 +9,23 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.SortedMap;
 
+
+/**
+ * An AVL tree {@link NavigableMap} implementation.
+ * 
+ * <p> Because AVL trees enforce stricter balance requirements than red-black trees, 
+ * performance of AVL trees is better than red-black in situations where red-black trees become
+ * unbalanced such as inserting 1 million elements in-order.
+ * 
+ * <p>This implementation provides guaranteed log(n) time cost for the
+ * {@code containsKey}, {@code get}, {@code put} and {@code remove}
+ * operations. 
+ * 
+ * @author David McManamon
+ *
+ * @param <K> the type of keys maintained by this map
+ * @param <V> the type of mapped values
+ */
 public class TreeMapAVL<K,V>
     extends AbstractMap<K,V>
     implements NavigableMap<K,V>, Cloneable, java.io.Serializable {
@@ -28,16 +45,48 @@ public class TreeMapAVL<K,V>
      *
      * @serial
      */
-    private final Comparator<? super K> comparator = null;
+    private final Comparator<? super K> comparator;
     
     /**
      * The number of structural modifications to the tree.
      */
     private transient int modCount = 0;
     
+    /**
+     * Constructs a new, empty tree map, using the natural ordering of its
+     * keys.  All keys inserted into the map must implement the {@link
+     * Comparable} interface.  Furthermore, all such keys must be
+     * <em>mutually comparable</em>: {@code k1.compareTo(k2)} must not throw
+     * a {@code ClassCastException} for any keys {@code k1} and
+     * {@code k2} in the map.  If the user attempts to put a key into the
+     * map that violates this constraint (for example, the user attempts to
+     * put a string key into a map whose keys are integers), the
+     * {@code put(Object key, Object value)} call will throw a
+     * {@code ClassCastException}.
+     */
     public TreeMapAVL() {
-    		
+    		comparator = null;
     }
+    
+    /**
+     * Constructs a new tree map containing the same mappings as the given
+     * map, ordered according to the <em>natural ordering</em> of its keys.
+     * All keys inserted into the new map must implement the {@link
+     * Comparable} interface.  Furthermore, all such keys must be
+     * <em>mutually comparable</em>: {@code k1.compareTo(k2)} must not throw
+     * a {@code ClassCastException} for any keys {@code k1} and
+     * {@code k2} in the map.  This method runs in n*log(n) time.
+     *
+     * @param  m the map whose mappings are to be placed in this map
+     * @throws ClassCastException if the keys in m are not {@link Comparable},
+     *         or are not mutually comparable
+     * @throws NullPointerException if the specified map is null
+     */
+    public TreeMapAVL(Map<? extends K, ? extends V> m) {
+        comparator = null;
+        putAll(m);
+    }
+    
     /**
      * Returns the number of key-value mappings in this map.
      *
@@ -47,13 +96,36 @@ public class TreeMapAVL<K,V>
         return size;
     }
     
+    /**
+     * Returns the value to which the specified key is mapped,
+     * or {@code null} if this map contains no mapping for the key.
+     *
+     * <p>More formally, if this map contains a mapping from a key
+     * {@code k} to a value {@code v} such that {@code key} compares
+     * equal to {@code k} according to the map's ordering, then this
+     * method returns {@code v}; otherwise it returns {@code null}.
+     * (There can be at most one such mapping.)
+     *
+     * <p>A return value of {@code null} does not <em>necessarily</em>
+     * indicate that the map contains no mapping for the key; it's also
+     * possible that the map explicitly maps the key to {@code null}.
+     * The {@link #containsKey containsKey} operation may be used to
+     * distinguish these two cases.
+     *
+     * @throws ClassCastException if the specified key cannot be compared
+     *         with the keys currently in the map
+     * @throws NullPointerException if the specified key is null
+     *         and this map uses natural ordering, or its comparator
+     *         does not permit null keys
+     */
     public V get(Object key) {
         Entry<K,V> p = getEntry(key);
         return (p==null ? null : p.value);
     }
 	
 	/**
-     * Node in the Tree.  Doubles as a means to pass key-value pairs back to
+     * Node in the Tree.  
+     * Doubles as a means to pass key-value pairs back to
      * user (see Map.Entry).
      */
     static final class Entry<K,V> implements Map.Entry<K,V> {
@@ -137,7 +209,9 @@ public class TreeMapAVL<K,V>
      *         does not permit null keys
      */
     final Entry<K,V> getEntry(Object key) {
-        //if (comparator != null) TODO
+    		// Offload comparator-based version for sake of performance
+        if (comparator != null)
+            return getEntryUsingComparator(key);
         if (key == null)
             throw new NullPointerException();
         @SuppressWarnings("unchecked")
@@ -151,6 +225,31 @@ public class TreeMapAVL<K,V>
                 p = p.right;
             else
                 return p;
+        }
+        return null;
+    }
+    
+    /**
+     * Version of getEntry using comparator. Split off from getEntry
+     * for performance. (This is not worth doing for most methods,
+     * that are less dependent on comparator performance, but is
+     * worthwhile here.)
+     */
+    final Entry<K,V> getEntryUsingComparator(Object key) {
+        @SuppressWarnings("unchecked")
+            K k = (K) key;
+        Comparator<? super K> cpr = comparator;
+        if (cpr != null) {
+            Entry<K,V> p = root;
+            while (p != null) {
+                int cmp = cpr.compare(k, p.key);
+                if (cmp < 0)
+                    p = p.left;
+                else if (cmp > 0)
+                    p = p.right;
+                else
+                    return p;
+            }
         }
         return null;
     }
@@ -248,7 +347,6 @@ public class TreeMapAVL<K,V>
     					rotateLeft(x);
     					break;
     				} else { // x.right.balance = -1
-    					//System.out.println(x.balance + "," + x.right.balance + "," + x.right.left.balance);
     					int rlBalance = x.right.left.balance;
     					x.right.left.balance = 0;
     					x.right.balance = 0;
@@ -258,9 +356,7 @@ public class TreeMapAVL<K,V>
     					else if (rlBalance == -1)
     						x.right.balance = 1;
     					
-    					//These 2 calls would produce the same result: 
     					rotateRight(x.right); rotateLeft(x);
-    					//rotateRightLeft(x);
     					break;
     				}
     			} else if (x.balance == -2) {
@@ -270,7 +366,6 @@ public class TreeMapAVL<K,V>
     					rotateRight(x);
     					break;
     				} else { // x.left.balance = 1
-    					//System.out.println(x.left.balance);
     					int lrBalance = x.left.right.balance;
     					x.left.right.balance = 0;
     					x.left.balance = 0;
@@ -280,8 +375,7 @@ public class TreeMapAVL<K,V>
     					else if (lrBalance == -1)
     						x.balance = 1;
     					
-    					rotateLeft(x.left);
-    					rotateRight(x);
+    					rotateLeft(x.left); rotateRight(x);
     					break;
     				}
     			}
@@ -296,10 +390,9 @@ public class TreeMapAVL<K,V>
     			x = x.parent;
     		}
     }
-
+    
     /** From CLR */
     private void rotateLeft(Entry<K,V> p) {
-    		//System.out.println("Left.");
         if (p != null) {
             Entry<K,V> r = p.right;
             p.right = r.left;
@@ -317,7 +410,27 @@ public class TreeMapAVL<K,V>
         }
     }
     
-    private void rotateRightLeft(Entry<K,V> p) {
+    /** From CLR */
+	private void rotateRight(Entry<K, V> p) {
+		if (p != null) {
+			Entry<K, V> l = p.left;
+			p.left = l.right;
+			if (l.right != null)
+				l.right.parent = p;
+			l.parent = p.parent;
+			if (p.parent == null)
+				root = l;
+			else if (p.parent.right == p)
+				p.parent.right = l;
+			else
+				p.parent.left = l;
+			l.right = p;
+			p.parent = l;
+		}
+	}
+	
+	@SuppressWarnings("unused")
+	private void rotateRightLeft(Entry<K,V> p) {
     		Entry<K,V> r = p.right;
     		Entry<K,V> rl = p.right.left;
     		
@@ -345,26 +458,6 @@ public class TreeMapAVL<K,V>
     		p.parent = rl;
     		r.parent = rl;
     }
-
-    /** From CLR */
-	private void rotateRight(Entry<K, V> p) {
-		// System.out.println("Right.");
-		if (p != null) {
-			Entry<K, V> l = p.left;
-			p.left = l.right;
-			if (l.right != null)
-				l.right.parent = p;
-			l.parent = p.parent;
-			if (p.parent == null)
-				root = l;
-			else if (p.parent.right == p)
-				p.parent.right = l;
-			else
-				p.parent.left = l;
-			l.right = p;
-			p.parent = l;
-		}
-	}
 
     /**
      * Removes the mapping for this key from this TreeMap if present.
@@ -445,7 +538,6 @@ public class TreeMapAVL<K,V>
     
     
     private void fixAfterDeletion(Entry<K,V> x) {
-    		// TODO
     		while (true) {
     			if (x.balance == 2) { // right heavy by 2? 
     				if (x.right.balance == 1) {
@@ -540,10 +632,10 @@ public class TreeMapAVL<K,V>
 	    return comparator==null ? ((Comparable<? super K>)k1).compareTo((K)k2)
 	        : comparator.compare((K)k1, (K)k2);
 	}
+	
 	@Override
 	public Comparator<? super K> comparator() {
-		// TODO Auto-generated method stub
-		return null;
+		return comparator;
 	}
 
 	@Override
@@ -634,11 +726,71 @@ public class TreeMapAVL<K,V>
         }
     }
 
-	@Override
-	public java.util.Map.Entry<K, V> lowerEntry(K key) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    /**
+     * Return SimpleImmutableEntry for entry, or null if null
+     */
+    static <K,V> Map.Entry<K,V> exportEntry(TreeMapAVL.Entry<K,V> e) {
+        return (e == null) ? null :
+            new AbstractMap.SimpleImmutableEntry<>(e);
+    }
+
+    /**
+     * Return key for entry, or null if null
+     */
+    static <K,V> K keyOrNull(TreeMapAVL.Entry<K,V> e) {
+        return (e == null) ? null : e.key;
+    }
+    
+    // NavigableMap API methods
+
+    /**
+     * @since 1.6
+     */
+    public Map.Entry<K,V> firstEntry() {
+        return exportEntry(getFirstEntry());
+    }
+
+    /**
+     * @since 1.6
+     */
+    public Map.Entry<K,V> lastEntry() {
+        return exportEntry(getLastEntry());
+    }
+
+    /**
+     * @since 1.6
+     */
+    public Map.Entry<K,V> pollFirstEntry() {
+        Entry<K,V> p = getFirstEntry();
+        Map.Entry<K,V> result = exportEntry(p);
+        if (p != null)
+            deleteEntry(p);
+        return result;
+    }
+
+    /**
+     * @since 1.6
+     */
+    public Map.Entry<K,V> pollLastEntry() {
+        Entry<K,V> p = getLastEntry();
+        Map.Entry<K,V> result = exportEntry(p);
+        if (p != null)
+            deleteEntry(p);
+        return result;
+    }
+
+    /**
+     * @throws ClassCastException {@inheritDoc}
+     * @throws NullPointerException if the specified key is null
+     *         and this map uses natural ordering, or its comparator
+     *         does not permit null keys
+     * @since 1.6
+     */
+    public Map.Entry<K,V> lowerEntry(K key) {
+        //return exportEntry(getLowerEntry(key));
+    		return null;
+    }
+  
 
 	@Override
 	public K lowerKey(K key) {
@@ -678,30 +830,6 @@ public class TreeMapAVL<K,V>
 
 	@Override
 	public K higherKey(K key) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public java.util.Map.Entry<K, V> firstEntry() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public java.util.Map.Entry<K, V> lastEntry() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public java.util.Map.Entry<K, V> pollFirstEntry() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public java.util.Map.Entry<K, V> pollLastEntry() {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -770,10 +898,10 @@ public class TreeMapAVL<K,V>
 	
 	
 	public static void main(String [] args) {
-		// TODO convert to test platform
-		Map<Integer, Integer> x = new TreeMapAVL<>();
+		// TODO experimenting to better understand, later move to test/benchmark area
+		TreeMapAVL<Integer, Integer> x = new TreeMapAVL<>();
 		
-		System.out.println(deleteRandomOrder(x) + " ms " + x.size()+ " elements..");
+		System.out.println(insertRandomOrder(x) + " ms ");
 		
 		//System.out.println(insertRandomOrder(x) + " ms to insert " + x.size()+ " elements.");
 	}
@@ -781,7 +909,7 @@ public class TreeMapAVL<K,V>
 	public static long insertRandomOrder(Map<Integer, Integer> x) {
 		long start = System.currentTimeMillis();
 		java.util.Random r = new java.util.Random();
-		for(Integer i=0; i < 1000000; i++) {
+		for(Integer i=0; i < 1000; i++) {
 			int next = r.nextInt();
 			x.put(next, next);
 		}
@@ -823,22 +951,26 @@ public class TreeMapAVL<K,V>
 		return stop - start;
 	}
 	
-	public static long lookup(Map<Integer, Integer> x) {
-		
+	public static long insertDeleteLookup(Map<Integer, Integer> x) {
+		long start = System.currentTimeMillis();
 		java.util.Random r = new java.util.Random();
-		Integer [] inserted = new Integer[500000];
-		for(Integer i=0; i < 500000; i++) {
-			Integer next = r.nextInt();
-			inserted[i] = next;
-			x.put(next, next);
+		Integer [] inserted = new Integer[1000000];
+		for(Integer i=0; i < 1000000; i++) {
+			if (i < 20000) {
+				inserted[i] = i;
+				x.put(i, i);
+			} else {
+				Integer next = r.nextInt();
+				inserted[i] = next;
+				x.put(next, next);
+			}
 		}
 		
-		long start = System.currentTimeMillis();
-		
-		for(Integer i=200000; i < 500000; i++) {
-			Integer result = x.get(inserted[i]);
-			if (result == null)
-				System.err.println("Error.");
+		for(Integer i=0; i < 500000; i++) {
+			if (i % 2 == 0)
+				x.remove(inserted[i]);
+			else
+				x.get(inserted[i]);
 		}
 		
 		long stop = System.currentTimeMillis();
