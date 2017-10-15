@@ -893,49 +893,4 @@ public class TreeMapAVL<K,V>
 		// TODO Auto-generated method stub
 		return null;
 	}
-	
-	
-	
-	
-	public static void main(String [] args) {
-		// TODO experimenting to better understand, later move to test/benchmark area
-		TreeMapAVL<Integer, Integer> x = new TreeMapAVL<>();
-		
-		System.out.println(insertInOrder(x) + " ms ");
-	}
-	
-	public static long insertInOrder(Map<Integer, Integer> x) {
-		long start = System.currentTimeMillis();
-		for(Integer i=0; i < 10000000; i++) {
-			x.put(i, i);
-		}
-		long stop = System.currentTimeMillis();
-		return stop - start;
-	}
-	
-	public static long insertDeleteLookup(Map<Integer, Integer> x) {
-		long start = System.currentTimeMillis();
-		java.util.Random r = new java.util.Random();
-		Integer [] inserted = new Integer[1000000];
-		for(Integer i=0; i < 1000000; i++) {
-			if (i < 20000) {
-				inserted[i] = i;
-				x.put(i, i);
-			} else {
-				Integer next = r.nextInt();
-				inserted[i] = next;
-				x.put(next, next);
-			}
-		}
-		
-		for(Integer i=0; i < 500000; i++) {
-			if (i % 2 == 0)
-				x.remove(inserted[i]);
-			else
-				x.get(inserted[i]);
-		}
-		
-		long stop = System.currentTimeMillis();
-		return stop - start;
-	}
 }
