@@ -52,6 +52,8 @@ public class TreeMapAVL<K,V>
      */
     private transient int modCount = 0;
     
+    private transient int rotations = 0;
+    
     /**
      * Constructs a new, empty tree map, using the natural ordering of its
      * keys.  All keys inserted into the map must implement the {@link
@@ -85,6 +87,24 @@ public class TreeMapAVL<K,V>
     public TreeMapAVL(Map<? extends K, ? extends V> m) {
         comparator = null;
         putAll(m);
+    }
+    
+    public int treeHeight() {
+    		return treeHeight(root);
+    }
+    
+    public int treeHeight(Entry<K,V> node){
+		if (node == null)
+			return 0;
+		return (1 + Math.max(treeHeight(node.left), treeHeight(node.right)));
+	}
+    
+    public int rotations() {
+    		return rotations;
+    }
+    
+    public String toString() {
+    		return "AVL       tree of size: " + size + ", height: " + treeHeight() + ", rotations " + rotations;
     }
     
     /**
@@ -356,7 +376,8 @@ public class TreeMapAVL<K,V>
     					else if (rlBalance == -1)
     						x.right.balance = 1;
     					
-    					rotateRight(x.right); rotateLeft(x);
+    					rotateRight(x.right); 
+    					rotateLeft(x);
     					break;
     				}
     			} else if (x.balance == -2) {
@@ -375,7 +396,8 @@ public class TreeMapAVL<K,V>
     					else if (lrBalance == -1)
     						x.balance = 1;
     					
-    					rotateLeft(x.left); rotateRight(x);
+    					rotateLeft(x.left); 
+    					rotateRight(x);
     					break;
     				}
     			}
@@ -392,43 +414,56 @@ public class TreeMapAVL<K,V>
     }
     
     /** From CLR */
-    private void rotateLeft(Entry<K,V> p) {
-        if (p != null) {
-            Entry<K,V> r = p.right;
-            p.right = r.left;
-            if (r.left != null)
-                r.left.parent = p;
-            r.parent = p.parent;
-            if (p.parent == null)
-                root = r;
-            else if (p.parent.left == p)
-                p.parent.left = r;
-            else
-                p.parent.right = r;
-            r.left = p;
-            p.parent = r;
-        }
-    }
+	private void rotateLeft(Entry<K, V> p) {
+		Entry<K, V> r = p.right;
+		p.right = r.left;
+		if (r.left != null)
+			r.left.parent = p;
+		r.parent = p.parent;
+		if (p.parent == null)
+			root = r;
+		else if (p.parent.left == p)
+			p.parent.left = r;
+		else
+			p.parent.right = r;
+		r.left = p;
+		p.parent = r;
+		rotations++;
+	}
     
     /** From CLR */
 	private void rotateRight(Entry<K, V> p) {
-		if (p != null) {
-			Entry<K, V> l = p.left;
-			p.left = l.right;
-			if (l.right != null)
-				l.right.parent = p;
-			l.parent = p.parent;
-			if (p.parent == null)
-				root = l;
-			else if (p.parent.right == p)
-				p.parent.right = l;
-			else
-				p.parent.left = l;
-			l.right = p;
-			p.parent = l;
-		}
+		Entry<K, V> l = p.left;
+		p.left = l.right;
+		if (l.right != null)
+			l.right.parent = p;
+		l.parent = p.parent;
+		if (p.parent == null)
+			root = l;
+		else if (p.parent.right == p)
+			p.parent.right = l;
+		else
+			p.parent.left = l;
+		l.right = p;
+		p.parent = l;
+		rotations++;
 	}
 	
+	/**
+	     x,+2                   x,*                               z,0
+
+	   /      \               /     \                          /       \
+
+	 A          y,-1        A         z,*                  x,-1          y,0
+
+	          /      \   ->         /     \         ->   /      \      /     \
+
+	      z,+1         D          B         y,*        A          B  C         D
+
+	    /      \                          /     \
+
+	  B          C                      C         D
+	  */
 	@SuppressWarnings("unused")
 	private void rotateRightLeft(Entry<K,V> p) {
     		Entry<K,V> r = p.right;
@@ -452,9 +487,10 @@ public class TreeMapAVL<K,V>
         else
         		p.parent.right = rl;
     		
-    		// set x & y's & z's parents & z's children
+    		// set z's children
     		rl.right = r;
     		rl.left = p;
+    		// set x & y's parent's
     		p.parent = rl;
     		r.parent = rl;
     }
@@ -612,8 +648,10 @@ public class TreeMapAVL<K,V>
      * The map will be empty after this call returns.
      */
     public void clear() {
+    		modCount++;
         size = 0;
         root = null;
+        rotations = 0;
     }
     
     /**
