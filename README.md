@@ -4,7 +4,14 @@ Performance of AVL &amp; Red-black trees compared in Java.
 Because AVL trees enforce stricter balance requirements than red-black trees, performance of AVL trees is better than red-black in situations where 
 red-black trees become unbalanced such as inserting 1 million elements in-order.
 
-For example, consider the following mean times for inserting integers in-order compared to OpenJDK’s JDK 1.8 TreeMap:
+There are excellent resources for AVL trees in the c language.  Two of them are:
+https://benpfaff.org/papers/libavl.pdf
+http://www.eternallyconfuzzled.com/tuts/datastructures/jsw_tut_avl.aspx
+
+However, I have been unable to find a variety of AVL tree implementations in Java.  
+The basic implementation choices are whether to use recursion, parent pointers, height or balance factor.
+
+Comparing in-order insertions with OpenJDK’s JDK 1.8 TreeMap and this libraries AVL implementation with parent pointers, the difference is notable:
 
 | Tree Type  | 100,000 inserts | 1,000,000 inserts |
 | --- | ---: | ---:|
