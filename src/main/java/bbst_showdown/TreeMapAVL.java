@@ -32,12 +32,12 @@ public class TreeMapAVL<K,V>
 
 	private static final long serialVersionUID = -3345445960366808335L;
 
-	public transient Entry<K,V> root = null;
+	protected transient Entry<K,V> root = null;
 
     /**
      * The number of entries in the tree
      */
-    private transient int size = 0;
+    protected transient int size = 0;
     
     /**
      * The comparator used to maintain order in this tree map, or
@@ -45,14 +45,14 @@ public class TreeMapAVL<K,V>
      *
      * @serial
      */
-    private final Comparator<? super K> comparator;
+    protected final Comparator<? super K> comparator;
     
     /**
      * The number of structural modifications to the tree.
      */
-    private transient int modCount = 0;
+    protected transient int modCount = 0;
     
-    private transient int rotations = 0;
+    protected transient int rotations = 0;
     
     /**
      * Constructs a new, empty tree map, using the natural ordering of its
@@ -104,7 +104,7 @@ public class TreeMapAVL<K,V>
     }
     
     public String toString() {
-    		return "AVL       tree of size: " + size + ", height: " + treeHeight() + ", rotations " + rotations;
+    		return "AVL tree of size: " + size + ", height: " + treeHeight() + ", rotations " + rotations;
     }
     
     /**
@@ -154,7 +154,7 @@ public class TreeMapAVL<K,V>
         Entry<K,V> left = null;
         Entry<K,V> right = null;
         Entry<K,V> parent = null;
-        byte balance = 0;
+        byte balance = 0;  // Height(RightSubtree(N)) - Height(LeftSubtree(N)) i.e. right heavy=positive balance, left heavy negative
 
         /**
          * Make a new cell with given key, value, and parent, and with

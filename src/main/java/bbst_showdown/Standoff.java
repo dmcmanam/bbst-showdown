@@ -19,6 +19,7 @@ public class Standoff {
 		TreeMapAVL<Integer, Integer> avl = new TreeMapAVL<>();
 		TreeMapRB<Integer, Integer> redBlack = new TreeMapRB<>();
 		TreeMapBST<Integer, Integer> bst = new TreeMapBST<>();
+		TreeMapAVLRec<Integer, Integer> avl2 = new TreeMapAVLRec<>();
 		
 		java.util.Random r = new java.util.Random();
 		Integer [] rands = new Integer[ (int) (Math.pow(2, 18) - 1)];
@@ -26,13 +27,18 @@ public class Standoff {
 			Integer next = r.nextInt(Integer.MAX_VALUE);
 			rands[i] = next;
 		}
-		Integer [] sorted = Arrays.copyOf(rands, rands.length);
-		Arrays.sort(sorted);
 		
-		
-		System.out.println("Results for inserting " + rands.length + " random integers (height 18 for a complete BST) -");
 		int mean1, mean2 = 0;
 		int runs = 0;
+		System.out.println("Results for inserting " + rands.length + " random integers (height 18 for a complete BST) -");
+		
+		runs = 0;
+		do {
+			runs++;
+			mean1 = insert(avl2, rands);
+			mean2 = insert(avl2, rands);
+		} while (Math.abs((mean1-mean2) / (double) mean1) > 0.04);
+		System.out.println("  Mean insertion time: " + mean1 + "ms and " + mean2 + "ms, runs to converge:" + runs + ". " + avl2);
 		
 		runs = 0;
 		do {
@@ -58,6 +64,8 @@ public class Standoff {
 		} while (Math.abs((mean1-mean2) / (double) mean1) > 0.04);
 		System.out.println("  Mean insertion time: " + mean1 + "ms and " + mean2 + "ms, runs to converge:" + runs + ". " + bst);
 		
+		Integer [] sorted = Arrays.copyOf(rands, rands.length);
+		Arrays.sort(sorted);
 		long start = System.currentTimeMillis();
 		TreeMapRB<Integer, Integer> copy = new TreeMapRB<>(redBlack);
 		long stop = System.currentTimeMillis();
@@ -92,7 +100,7 @@ public class Standoff {
 
 	private static int insert(Map<Integer, Integer> tree, Integer [] rands) {
 		long start = System.currentTimeMillis();
-		for (int run=0; run < 7; run++) {
+		for (int run=0; run < 10; run++) {
 			tree.clear();
 			for (int i=0; i < rands.length; i++) {
 				tree.put(rands[i], rands[i]);
@@ -100,7 +108,7 @@ public class Standoff {
 		}
 		long stop = System.currentTimeMillis();
 		
-		return (int)(stop - start) / 7;
+		return (int)(stop - start) / 10;
 	}
 	
 	public static long insertDeleteLookup(Map<Integer, Integer> x) {
