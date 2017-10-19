@@ -365,7 +365,6 @@ public class TreeMapAVL<K,V>
     					x.balance = 0;
     					x.right.balance = 0;
     					rotateLeft(x);
-    					break;
     				} else { // x.right.balance = -1
     					int rlBalance = x.right.left.balance;
     					x.right.left.balance = 0;
@@ -378,14 +377,13 @@ public class TreeMapAVL<K,V>
     					
     					rotateRight(x.right); 
     					rotateLeft(x);
-    					break;
     				}
+    				break;
     			} else if (x.balance == -2) {
     				if (x.left.balance == -1) {
     					x.balance = 0;
     					x.left.balance = 0;
     					rotateRight(x);
-    					break;
     				} else { // x.left.balance = 1
     					int lrBalance = x.left.right.balance;
     					x.left.right.balance = 0;
@@ -398,8 +396,8 @@ public class TreeMapAVL<K,V>
     					
     					rotateLeft(x.left); 
     					rotateRight(x);
-    					break;
     				}
+    				break;
     			}
     			
     			if (x.parent == null)
@@ -818,6 +816,135 @@ public class TreeMapAVL<K,V>
     }
 
     /**
+     * Gets the entry corresponding to the specified key; if no such entry
+     * exists, returns the entry for the least key greater than the specified
+     * key; if no such entry exists (i.e., the greatest key in the Tree is less
+     * than the specified key), returns {@code null}.
+     */
+    final Entry<K,V> getCeilingEntry(K key) {
+        Entry<K,V> p = root;
+        while (p != null) {
+            int cmp = compare(key, p.key);
+            if (cmp < 0) {
+                if (p.left != null)
+                    p = p.left;
+                else
+                    return p;
+            } else if (cmp > 0) {
+                if (p.right != null) {
+                    p = p.right;
+                } else {
+                    Entry<K,V> parent = p.parent;
+                    Entry<K,V> ch = p;
+                    while (parent != null && ch == parent.right) {
+                        ch = parent;
+                        parent = parent.parent;
+                    }
+                    return parent;
+                }
+            } else
+                return p;
+        }
+        return null;
+    }
+    
+    /**
+     * Gets the entry corresponding to the specified key; if no such entry
+     * exists, returns the entry for the greatest key less than the specified
+     * key; if no such entry exists, returns {@code null}.
+     */
+    final Entry<K,V> getFloorEntry(K key) {
+        Entry<K,V> p = root;
+        while (p != null) {
+            int cmp = compare(key, p.key);
+            if (cmp > 0) {
+                if (p.right != null)
+                    p = p.right;
+                else
+                    return p;
+            } else if (cmp < 0) {
+                if (p.left != null) {
+                    p = p.left;
+                } else {
+                    Entry<K,V> parent = p.parent;
+                    Entry<K,V> ch = p;
+                    while (parent != null && ch == parent.left) {
+                        ch = parent;
+                        parent = parent.parent;
+                    }
+                    return parent;
+                }
+            } else
+                return p;
+
+        }
+        return null;
+    }
+    
+    /**
+     * Gets the entry for the least key greater than the specified
+     * key; if no such entry exists, returns the entry for the least
+     * key greater than the specified key; if no such entry exists
+     * returns {@code null}.
+     */
+    final Entry<K,V> getHigherEntry(K key) {
+        Entry<K,V> p = root;
+        while (p != null) {
+            int cmp = compare(key, p.key);
+            if (cmp < 0) {
+                if (p.left != null)
+                    p = p.left;
+                else
+                    return p;
+            } else {
+                if (p.right != null) {
+                    p = p.right;
+                } else {
+                    Entry<K,V> parent = p.parent;
+                    Entry<K,V> ch = p;
+                    while (parent != null && ch == parent.right) {
+                        ch = parent;
+                        parent = parent.parent;
+                    }
+                    return parent;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns the entry for the greatest key less than the specified key; if
+     * no such entry exists (i.e., the least key in the Tree is greater than
+     * the specified key), returns {@code null}.
+     */
+    final Entry<K,V> getLowerEntry(K key) {
+        Entry<K,V> p = root;
+        while (p != null) {
+            int cmp = compare(key, p.key);
+            if (cmp > 0) {
+                if (p.right != null)
+                    p = p.right;
+                else
+                    return p;
+            } else {
+                if (p.left != null) {
+                    p = p.left;
+                } else {
+                    Entry<K,V> parent = p.parent;
+                    Entry<K,V> ch = p;
+                    while (parent != null && ch == parent.left) {
+                        ch = parent;
+                        parent = parent.parent;
+                    }
+                    return parent;
+                }
+            }
+        }
+        return null;
+    }
+    
+    /**
      * @throws ClassCastException {@inheritDoc}
      * @throws NullPointerException if the specified key is null
      *         and this map uses natural ordering, or its comparator
@@ -825,53 +952,89 @@ public class TreeMapAVL<K,V>
      * @since 1.6
      */
     public Map.Entry<K,V> lowerEntry(K key) {
-        //return exportEntry(getLowerEntry(key));
-    		return null;
+        return exportEntry(getLowerEntry(key));
     }
-  
 
-	@Override
-	public K lowerKey(K key) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    /**
+     * @throws ClassCastException {@inheritDoc}
+     * @throws NullPointerException if the specified key is null
+     *         and this map uses natural ordering, or its comparator
+     *         does not permit null keys
+     * @since 1.6
+     */
+    public K lowerKey(K key) {
+        return keyOrNull(getLowerEntry(key));
+    }
 
-	@Override
-	public java.util.Map.Entry<K, V> floorEntry(K key) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    /**
+     * @throws ClassCastException {@inheritDoc}
+     * @throws NullPointerException if the specified key is null
+     *         and this map uses natural ordering, or its comparator
+     *         does not permit null keys
+     * @since 1.6
+     */
+    public Map.Entry<K,V> floorEntry(K key) {
+        return exportEntry(getFloorEntry(key));
+    }
 
-	@Override
-	public K floorKey(K key) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    /**
+     * @throws ClassCastException {@inheritDoc}
+     * @throws NullPointerException if the specified key is null
+     *         and this map uses natural ordering, or its comparator
+     *         does not permit null keys
+     * @since 1.6
+     */
+    public K floorKey(K key) {
+        return keyOrNull(getFloorEntry(key));
+    }
 
-	@Override
-	public java.util.Map.Entry<K, V> ceilingEntry(K key) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    /**
+     * @throws ClassCastException {@inheritDoc}
+     * @throws NullPointerException if the specified key is null
+     *         and this map uses natural ordering, or its comparator
+     *         does not permit null keys
+     * @since 1.6
+     */
+    public Map.Entry<K,V> ceilingEntry(K key) {
+        return exportEntry(getCeilingEntry(key));
+    }
 
-	@Override
-	public K ceilingKey(K key) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    /**
+     * @throws ClassCastException {@inheritDoc}
+     * @throws NullPointerException if the specified key is null
+     *         and this map uses natural ordering, or its comparator
+     *         does not permit null keys
+     * @since 1.6
+     */
+    public K ceilingKey(K key) {
+        return keyOrNull(getCeilingEntry(key));
+    }
 
-	@Override
-	public java.util.Map.Entry<K, V> higherEntry(K key) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    /**
+     * @throws ClassCastException {@inheritDoc}
+     * @throws NullPointerException if the specified key is null
+     *         and this map uses natural ordering, or its comparator
+     *         does not permit null keys
+     * @since 1.6
+     */
+    public Map.Entry<K,V> higherEntry(K key) {
+        return exportEntry(getHigherEntry(key));
+    }
 
-	@Override
-	public K higherKey(K key) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    /**
+     * @throws ClassCastException {@inheritDoc}
+     * @throws NullPointerException if the specified key is null
+     *         and this map uses natural ordering, or its comparator
+     *         does not permit null keys
+     * @since 1.6
+     */
+    public K higherKey(K key) {
+        return keyOrNull(getHigherEntry(key));
+    }
 
+    
+    
+    
 	@Override
 	public NavigableMap<K, V> descendingMap() {
 		// TODO Auto-generated method stub
