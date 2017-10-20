@@ -8,7 +8,9 @@ import java.util.Set;
 
 
 /**
- * An WAVL tree implementation with rank and no recursion.
+ * A WAVL tree implementation with rank and no recursion.
+ * 
+ * https://en.wikipedia.org/wiki/WAVL_tree
  * 
  * <p>This implementation provides guaranteed log(n) time cost for the
  * {@code containsKey}, {@code get}, {@code put} and {@code remove}
@@ -92,7 +94,7 @@ public class TreeMapWAVL<K,V> extends AbstractMap<K,V> {
     }
     
     public String toString() {
-    		return "AVL tree of size: " + size + ", height: " + treeHeight() + ", rotations " + rotations;
+    		return "WAVL tree of size: " + size + ", height: " + treeHeight() + ", rotations " + rotations;
     }
     
     /**
@@ -329,7 +331,9 @@ public class TreeMapWAVL<K,V> extends AbstractMap<K,V> {
         } else {
             parent.right = e;
         }
-        fixAfterInsertion(parent);
+        
+        if (parent.rank != 1)
+        		fixAfterInsertion(parent);
         
         size++;
         modCount++;
