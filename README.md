@@ -9,7 +9,8 @@ https://benpfaff.org/papers/libavl.pdf
 http://www.eternallyconfuzzled.com/tuts/datastructures/jsw_tut_avl.aspx
 
 However, I have been unable to find a variety of AVL tree implementations in Java.
-Specifically, most Java implementations use height and recursion, arguably the most elegant; however, I wanted to implement a version with parent pointers, balance factors and no recursion.
+Specifically, most Java implementations use height and recursion, arguably the most elegant; 
+however, I wanted to implement a faster version with parent pointers, balance factors and no recursion.
 
 Comparing in-order insertions with OpenJDK’s JDK 1.8 TreeMap and this AVL implementation with parent pointers, the difference is notable:
 
