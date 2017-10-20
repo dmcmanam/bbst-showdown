@@ -332,7 +332,7 @@ public class TreeMapWAVL<K,V> extends AbstractMap<K,V> {
             parent.right = e;
         }
         
-        if (parent.rank != 1)
+        if (parent.rank == 0)
         		fixAfterInsertion(parent);
         
         size++;
