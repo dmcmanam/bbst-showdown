@@ -1,17 +1,17 @@
 package bbst_showdown;
 
 import java.util.AbstractMap;
+import java.util.AbstractSet;
 import java.util.Comparator;
+import java.util.ConcurrentModificationException;
+import java.util.Iterator;
 import java.util.Map;
-import java.util.NavigableMap;
-import java.util.NavigableSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.SortedMap;
-
+import java.util.Spliterator;
 
 /**
- * An AVL tree {@link NavigableMap} implementation.
+ * An AVL tree implementation.
  * 
  * <p> Because AVL trees enforce stricter balance requirements than red-black trees, 
  * performance of AVL trees is better than red-black in situations where red-black trees become
@@ -26,11 +26,7 @@ import java.util.SortedMap;
  * @param <K> the type of keys maintained by this map
  * @param <V> the type of mapped values
  */
-public class TreeMapAVL<K,V>
-    extends AbstractMap<K,V>
-    implements NavigableMap<K,V>, Cloneable, java.io.Serializable {
-
-	private static final long serialVersionUID = -3345445960366808335L;
+public class TreeMapAVL<K,V> extends AbstractMap<K,V> {
 
 	protected transient Entry<K,V> root = null;
 
@@ -641,6 +637,138 @@ public class TreeMapAVL<K,V>
     		}
     }
     
+    /**
+     * Returns a {@link Set} view of the mappings contained in this map.
+     *
+     * <p>The set's iterator returns the entries in ascending key order. The
+     * sets's spliterator is
+     * <em><a href="Spliterator.html#binding">late-binding</a></em>,
+     * <em>fail-fast</em>, and additionally reports {@link Spliterator#SORTED} and
+     * {@link Spliterator#ORDERED} with an encounter order that is ascending key
+     * order.
+     *
+     * <p>The set is backed by the map, so changes to the map are
+     * reflected in the set, and vice-versa.  If the map is modified
+     * while an iteration over the set is in progress (except through
+     * the iterator's own {@code remove} operation, or through the
+     * {@code setValue} operation on a map entry returned by the
+     * iterator) the results of the iteration are undefined.  The set
+     * supports element removal, which removes the corresponding
+     * mapping from the map, via the {@code Iterator.remove},
+     * {@code Set.remove}, {@code removeAll}, {@code retainAll} and
+     * {@code clear} operations.  It does not support the
+     * {@code add} or {@code addAll} operations.
+     */
+    public Set<Map.Entry<K,V>> entrySet() {
+        EntrySet es = entrySet;
+        return (es != null) ? es : (entrySet = new EntrySet());
+    }
+    
+    private transient EntrySet entrySet = null;
+    
+    class EntrySet extends AbstractSet<Map.Entry<K,V>> {
+        public Iterator<Map.Entry<K,V>> iterator() {
+            return new EntryIterator(getFirstEntry());
+        }
+
+        public boolean contains(Object o) {
+            if (!(o instanceof Map.Entry))
+                return false;
+            Map.Entry<?,?> entry = (Map.Entry<?,?>) o;
+            Object value = entry.getValue();
+            Entry<K,V> p = getEntry(entry.getKey());
+            return p != null && valEquals(p.getValue(), value);
+        }
+
+        public boolean remove(Object o) {
+            if (!(o instanceof Map.Entry))
+                return false;
+            Map.Entry<?,?> entry = (Map.Entry<?,?>) o;
+            Object value = entry.getValue();
+            Entry<K,V> p = getEntry(entry.getKey());
+            if (p != null && valEquals(p.getValue(), value)) {
+                deleteEntry(p);
+                return true;
+            }
+            return false;
+        }
+
+        public int size() {
+            return TreeMapAVL.this.size();
+        }
+
+        public void clear() {
+            TreeMapAVL.this.clear();
+        }
+
+        public Spliterator<Map.Entry<K,V>> spliterator() {
+            return null;
+        }
+    }
+    
+    /**
+     * Base class for TreeMap Iterators
+     */
+    abstract class PrivateEntryIterator<T> implements Iterator<T> {
+        Entry<K,V> next;
+        Entry<K,V> lastReturned;
+        int expectedModCount;
+
+        PrivateEntryIterator(Entry<K,V> first) {
+            expectedModCount = modCount;
+            lastReturned = null;
+            next = first;
+        }
+
+        public final boolean hasNext() {
+            return next != null;
+        }
+
+        final Entry<K,V> nextEntry() {
+            Entry<K,V> e = next;
+            if (e == null)
+                throw new NoSuchElementException();
+            if (modCount != expectedModCount)
+                throw new ConcurrentModificationException();
+            next = successor(e);
+            lastReturned = e;
+            return e;
+        }
+
+        final Entry<K,V> prevEntry() {
+            Entry<K,V> e = next;
+            if (e == null)
+                throw new NoSuchElementException();
+            if (modCount != expectedModCount)
+                throw new ConcurrentModificationException();
+            next = predecessor(e);
+            lastReturned = e;
+            return e;
+        }
+
+        public void remove() {
+            if (lastReturned == null)
+                throw new IllegalStateException();
+            if (modCount != expectedModCount)
+                throw new ConcurrentModificationException();
+            // deleted entries are replaced by their successors
+            if (lastReturned.left != null && lastReturned.right != null)
+                next = lastReturned;
+            deleteEntry(lastReturned);
+            expectedModCount = modCount;
+            lastReturned = null;
+        }
+    }
+
+    final class EntryIterator extends PrivateEntryIterator<Map.Entry<K,V>> {
+        EntryIterator(Entry<K,V> first) {
+            super(first);
+        }
+        public Map.Entry<K,V> next() {
+            return nextEntry();
+        }
+    }
+    
 	/**
      * Removes all of the mappings from this map.
      * The map will be empty after this call returns.
@@ -667,21 +795,6 @@ public class TreeMapAVL<K,V>
 	final int compare(Object k1, Object k2) {
 	    return comparator==null ? ((Comparable<? super K>)k1).compareTo((K)k2)
 	        : comparator.compare((K)k1, (K)k2);
-	}
-	
-	@Override
-	public Comparator<? super K> comparator() {
-		return comparator;
-	}
-
-	@Override
-	public K firstKey() {
-		return key(getFirstEntry());
-	}
-	
-	@Override
-	public K lastKey() {
-		return key(getLastEntry());
 	}
 	
 	/**
@@ -1031,67 +1144,4 @@ public class TreeMapAVL<K,V>
     public K higherKey(K key) {
         return keyOrNull(getHigherEntry(key));
     }
-
-    
-    
-    
-	@Override
-	public NavigableMap<K, V> descendingMap() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public NavigableSet<K> navigableKeySet() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public NavigableSet<K> descendingKeySet() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public NavigableMap<K, V> subMap(K fromKey, boolean fromInclusive, K toKey, boolean toInclusive) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public NavigableMap<K, V> headMap(K toKey, boolean inclusive) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public NavigableMap<K, V> tailMap(K fromKey, boolean inclusive) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public SortedMap<K, V> subMap(K fromKey, K toKey) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public SortedMap<K, V> headMap(K toKey) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public SortedMap<K, V> tailMap(K fromKey) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Set<java.util.Map.Entry<K, V>> entrySet() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 }
