@@ -21,8 +21,9 @@ import java.util.Set;
  * @param <K> the type of keys maintained by this map
  * @param <V> the type of mapped values
  */
-public class TreeMapWAVL<K,V> extends AbstractMap<K,V> {
-	protected transient Entry<K,V> root = null;
+public class TreeMapWAVL<K, V> extends AbstractMap<K, V> {
+    
+    protected transient Entry<K, V> root = null;
 
     /**
      * The number of entries in the tree
@@ -57,7 +58,7 @@ public class TreeMapWAVL<K,V> extends AbstractMap<K,V> {
      * {@code ClassCastException}.
      */
     public TreeMapWAVL() {
-    		comparator = null;
+	comparator = null;
     }
     
     /**
@@ -80,21 +81,21 @@ public class TreeMapWAVL<K,V> extends AbstractMap<K,V> {
     }
     
     public int treeHeight() {
-    		return treeHeight(root);
+	return treeHeight(root);
     }
-    
-    public int treeHeight(Entry<K,V> node){
-		if (node == null)
-			return 0;
-		return (1 + Math.max(treeHeight(node.left), treeHeight(node.right)));
-	}
+
+    public int treeHeight(Entry<K, V> node) {
+	if (node == null)
+	    return 0;
+	return (1 + Math.max(treeHeight(node.left), treeHeight(node.right)));
+    }
     
     public int rotations() {
-    		return rotations;
+	return rotations;
     }
-    
+
     public String toString() {
-    		return "WAVL tree of size: " + size + ", height: " + treeHeight() + ", rotations " + rotations;
+	return "WAVL tree of size: " + size + ", height: " + treeHeight() + ", rotations " + rotations;
     }
     
     /**
@@ -360,94 +361,94 @@ If the procedure increases the rank of a node x, so that it becomes equal to the
 	it is always possible to rearrange the tree nodes near x and y in such a way that the ranks obey the constraints of a WAVL tree, 
 	leaving the rank of the root of the rotated subtree unchanged.
      */
-    private void fixAfterInsertion(Entry<K,V> x) {
-    		x.rank++;
-		while (x.parent != null && (x.parent.rank - x.rank) != 1) {
-			Entry<K, V> p = x.parent;
-			if (p.left == x) { // check if left heavy?
-				if (needToRotateLeftHeavy(p)) { 
-					if (x.right != null && (x.rank - x.right.rank) == 1) {
-						x.rank--;
-						x.right.rank++;
-						rotateLeft(x);
-					}
-					p.rank--;
-					rotateRight(p);
-					break;
-				}
-			} else {
-				if (needToRotateRightHeavy(p)) {
-					if (x.left != null && (x.rank - x.left.rank) == 1) {
-						x.rank--;
-						x.left.rank++;
-						rotateRight(x);
-					}
-					p.rank--;
-					rotateLeft(p);
-					break;
-				}
-			}
+    private void fixAfterInsertion(Entry<K, V> x) {
+	x.rank++;
+	while (x.parent != null && (x.parent.rank - x.rank) != 1) {
+	    Entry<K, V> p = x.parent;
+	    if (p.left == x) { // check if left heavy?
+		if (needToRotateLeftHeavy(p)) {
+		    if (x.right != null && (x.rank - x.right.rank) == 1) {
+			x.rank--;
+			x.right.rank++;
+			rotateLeft(x);
+		    }
+		    p.rank--;
+		    rotateRight(p);
+		    break;
+		}
+	    } else {
+		if (needToRotateRightHeavy(p)) {
+		    if (x.left != null && (x.rank - x.left.rank) == 1) {
+			x.rank--;
+			x.left.rank++;
+			rotateRight(x);
+		    }
+		    p.rank--;
+		    rotateLeft(p);
+		    break;
+		}
+	    }
 
-    			x = x.parent;
-    			x.rank++;
-    		}
+	    x = x.parent;
+	    x.rank++;
+	}
     }
 
-	private boolean needToRotateRightHeavy(Entry<K, V> p) {
-		if (p.left == null) {
-			if (p.rank == 1)
-				return true;
-			return false;
-		} else if (p.rank - p.left.rank == 2)
-			return true;
-		return false;
-	}
+    private boolean needToRotateRightHeavy(Entry<K, V> p) {
+	if (p.left == null) {
+	    if (p.rank == 1)
+		return true;
+	    return false;
+	} else if (p.rank - p.left.rank == 2)
+	    return true;
+	return false;
+    }
 
-	private boolean needToRotateLeftHeavy(Entry<K, V> p) {
-		if (p.right == null) {
-			if (p.rank == 1)
-				return true;
-			return false;
-		} else if (p.rank - p.right.rank == 2)
-			return true;
-		return false;
-	}
+    private boolean needToRotateLeftHeavy(Entry<K, V> p) {
+	if (p.right == null) {
+	    if (p.rank == 1)
+		return true;
+	    return false;
+	} else if (p.rank - p.right.rank == 2)
+	    return true;
+	return false;
+    }
     
     /** From CLR */
-	private void rotateLeft(Entry<K, V> p) {
-		Entry<K, V> r = p.right;
-		p.right = r.left;
-		if (r.left != null)
-			r.left.parent = p;
-		r.parent = p.parent;
-		if (p.parent == null)
-			root = r;
-		else if (p.parent.left == p)
-			p.parent.left = r;
-		else
-			p.parent.right = r;
-		r.left = p;
-		p.parent = r;
-		rotations++;
-	}
-    
+    private void rotateLeft(Entry<K, V> p) {
+	Entry<K, V> r = p.right;
+	p.right = r.left;
+	if (r.left != null)
+	    r.left.parent = p;
+	r.parent = p.parent;
+	if (p.parent == null)
+	    root = r;
+	else if (p.parent.left == p)
+	    p.parent.left = r;
+	else
+	    p.parent.right = r;
+	r.left = p;
+	p.parent = r;
+	rotations++;
+    }
+
     /** From CLR */
-	private void rotateRight(Entry<K, V> p) {
-		Entry<K, V> l = p.left;
-		p.left = l.right;
-		if (l.right != null)
-			l.right.parent = p;
-		l.parent = p.parent;
-		if (p.parent == null)
-			root = l;
-		else if (p.parent.right == p)
-			p.parent.right = l;
-		else
-			p.parent.left = l;
-		l.right = p;
-		p.parent = l;
-		rotations++;
-	}
+    private void rotateRight(Entry<K, V> p) {
+	Entry<K, V> l = p.left;
+	p.left = l.right;
+	if (l.right != null)
+	    l.right.parent = p;
+	l.parent = p.parent;
+	if (p.parent == null)
+	    root = l;
+	else if (p.parent.right == p)
+	    p.parent.right = l;
+	else
+	    p.parent.left = l;
+	l.right = p;
+	p.parent = l;
+	rotations++;
+    }
 
     /**
      * Removes the mapping for this key from this TreeMap if present.
@@ -478,7 +479,7 @@ If the procedure increases the rank of a node x, so that it becomes equal to the
      * The map will be empty after this call returns.
      */
     public void clear() {
-    		modCount++;
+    	modCount++;
         size = 0;
         root = null;
         rotations = 0;
@@ -492,18 +493,19 @@ If the procedure increases the rank of a node x, so that it becomes equal to the
         return (o1==null ? o2==null : o1.equals(o2));
     }
 
-	/**
-	 * Compares two keys using the correct comparison method for this TreeMap.
-	 */
-	@SuppressWarnings("unchecked")
-	final int compare(Object k1, Object k2) {
-	    return comparator==null ? ((Comparable<? super K>)k1).compareTo((K)k2)
-	        : comparator.compare((K)k1, (K)k2);
-	}
-	
-	/**
+    /**
+     * Compares two keys using the correct comparison method for this TreeMap.
+     */
+    @SuppressWarnings("unchecked")
+    final int compare(Object k1, Object k2) {
+	return comparator == null ? ((Comparable<? super K>) k1).compareTo((K) k2) : comparator.compare((K) k1, (K) k2);
+    }
+
+    /**
      * Returns the key corresponding to the specified Entry.
-     * @throws NoSuchElementException if the Entry is null
+     * 
+     * @throws NoSuchElementException
+     *             if the Entry is null
      */
     static <K> K key(Entry<K,?> e) {
         if (e==null)
@@ -579,9 +581,9 @@ If the procedure increases the rank of a node x, so that it becomes equal to the
         }
     }
 
-	@Override
-	public Set<java.util.Map.Entry<K, V>> entrySet() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @Override
+    public Set<java.util.Map.Entry<K, V>> entrySet() {
+	// TODO Auto-generated method stub
+	return null;
+    }
 }
