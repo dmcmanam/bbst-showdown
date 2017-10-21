@@ -284,69 +284,69 @@ public class TreeMapWAVL<K, V> extends AbstractMap<K, V> {
      *         does not permit null keys
      */
     public V put(K key, V value) {
-        Entry<K,V> t = root;
-        if (t == null) {
-            compare(key, key); // type (and possibly null) check
+	Entry<K, V> t = root;
+	if (t == null) {
+	    compare(key, key); // type (and possibly null) check
 
-            root = new Entry<>(key, value, null);
-            size = 1;
-            modCount++;
-            return null;
-        }
-        int cmp;
-        Entry<K,V> parent;
-        // split comparator and comparable paths
-        Comparator<? super K> cpr = comparator;
-        if (cpr != null) {
-            do {
-                parent = t;
-                cmp = cpr.compare(key, t.key);
-                if (cmp < 0)
-                    t = t.left;
-                else if (cmp > 0)
-                    t = t.right;
-                else
-                    return t.setValue(value);
-            } while (t != null);
-        }
-        else {
-            if (key == null)
-                throw new NullPointerException();
-            @SuppressWarnings("unchecked")
-                Comparable<? super K> k = (Comparable<? super K>) key;
-            do {
-                parent = t;
-                cmp = k.compareTo(t.key);
-                if (cmp < 0)
-                    t = t.left;
-                else if (cmp > 0)
-                    t = t.right;
-                else
-                    return t.setValue(value);
-            } while (t != null);
-        }
-        
-        Entry<K,V> e = new Entry<>(key, value, parent);
-        if (cmp < 0) {
-            parent.left = e;
-        } else {
-            parent.right = e;
-        }
-        
-        if (parent.rank == 0)
-        		fixAfterInsertion(parent);
-        
-        size++;
-        modCount++;
-        return null;
+	    root = new Entry<>(key, value, null);
+	    size = 1;
+	    modCount++;
+	    return null;
+	}
+	int cmp;
+	Entry<K, V> parent;
+	// split comparator and comparable paths
+	Comparator<? super K> cpr = comparator;
+	if (cpr != null) {
+	    do {
+		parent = t;
+		cmp = cpr.compare(key, t.key);
+		if (cmp < 0)
+		    t = t.left;
+		else if (cmp > 0)
+		    t = t.right;
+		else
+		    return t.setValue(value);
+	    } while (t != null);
+	} else {
+	    if (key == null)
+		throw new NullPointerException();
+	    @SuppressWarnings("unchecked")
+	    Comparable<? super K> k = (Comparable<? super K>) key;
+	    do {
+		parent = t;
+		cmp = k.compareTo(t.key);
+		if (cmp < 0)
+		    t = t.left;
+		else if (cmp > 0)
+		    t = t.right;
+		else
+		    return t.setValue(value);
+	    } while (t != null);
+	}
+
+	Entry<K, V> e = new Entry<>(key, value, parent);
+	if (cmp < 0) {
+	    parent.left = e;
+	} else {
+	    parent.right = e;
+	}
+
+	if (parent.rank == 0) {
+	    fixAfterInsertion(parent);
+	}
+
+	size++;
+	modCount++;
+	return null;
     }
     
-    public void inOrderTraversal(Entry<K,V> x) {
-    		if (x == null)
-    			return;
-    		inOrderTraversal(x.left);
-    		System.out.println(x.value + ", " + x.rank);
-    		inOrderTraversal(x.right);
+    public void inOrderTraversal(Entry<K, V> x) {
+	if (x == null)
+	    return;
+	inOrderTraversal(x.left);
+	System.out.println(x.value + ", " + x.rank);
+	inOrderTraversal(x.right);
     }
     
     /**
@@ -357,9 +357,7 @@ If the path of incremented ranks reaches a node whose parent's rank previously d
 	the structure of the tree.
 If the procedure increases the rank of a node x, so that it becomes equal to the rank of the parent y of x, 
 	but the other child of y has a rank that is smaller by two (so that the rank of y cannot be increased) 
-	then again the rebalancing procedure stops. In this case, by performing at most two tree rotations, 
-	it is always possible to rearrange the tree nodes near x and y in such a way that the ranks obey the constraints of a WAVL tree, 
-	leaving the rank of the root of the rotated subtree unchanged.
+	then again the rebalancing procedure stops after performing rotations necessary.
      */
     private void fixAfterInsertion(Entry<K, V> x) {
 	x.rank++;
@@ -465,16 +463,113 @@ If the procedure increases the rank of a node x, so that it becomes equal to the
      *         does not permit null keys
      */
     public V remove(Object key) {
-        Entry<K,V> p = getEntry(key);
-        if (p == null)
-            return null;
+	Entry<K, V> p = getEntry(key);
+	if (p == null)
+	    return null;
 
-        V oldValue = p.value;
-        // TODO
-        throw new RuntimeException("Tomorrow");
+	V oldValue = p.value;
+	deleteEntry(p);
+	return oldValue;
     }
     
-	/**
+    /**
+     * Delete node p, and then rebalance the tree.
+     */
+    private void deleteEntry(Entry<K,V> p) {
+        modCount++;
+        size--;
+
+        // If strictly internal, copy successor's element to p and then make p
+        // point to successor.
+        if (p.left != null && p.right != null) {
+            Entry<K,V> s = successor(p);
+            p.key = s.key;
+            p.value = s.value;
+            p = s;
+        } // p has 2 children
+
+        // Start fixup at replacement node, if it exists.
+        Entry<K,V> replacement = (p.left != null ? p.left : p.right);
+
+        if (replacement != null) {
+            // Link replacement to parent
+	    replacement.parent = p.parent;
+	    Entry<K, V> mirror = null;
+	    if (p.parent == null) {
+		// TODO add unit test here.
+		root = replacement;
+		return;
+	    } else if (p == p.parent.left) {
+		p.parent.left = replacement;
+		mirror = p.parent.right;
+	    } else {
+		p.parent.right = replacement;
+		mirror = p.parent.left;
+	    }
+
+	    // Null out links so they are OK to use by fixAfterDeletion.
+	    p.left = p.right = p.parent = null;
+
+	    // TODO
+	    if (mirror == null || (p.parent.rank - mirror.rank) != 1) {
+		fixAfterDeletion(replacement.parent, mirror);
+	    }
+        } else if (p.parent == null) { // return if we are the only node.
+            root = null;
+        } else { //  No children. Use self as phantom replacement and unlink.
+            // TODO check if null check necessary?
+            Entry<K, V> fixPoint = p.parent;
+            Entry<K, V> mirror = null;
+
+	    if (p == p.parent.left) {
+		p.parent.left = null;
+		mirror = fixPoint.right;
+	    } else if (p == p.parent.right) {
+		p.parent.right = null;
+		mirror = fixPoint.left;
+	    }
+	    p.parent = null;
+
+	    if (mirror == null || (fixPoint.rank - p.rank >= 2) || (fixPoint.rank - mirror.rank) != 1 ) {
+		fixAfterDeletion(fixPoint, mirror);
+	    }
+        }
+    }
+    
+    //mirror node is a term from Knuth's Art of CP, refers to the parent node's other child.
+    private void fixAfterDeletion(Entry<K, V> p, Entry<K,V> mirror) {
+	do {
+	    p.rank--;
+	    if (p.left == mirror) { // check if left heavy?
+		if (mirror != null && p.rank - mirror.rank <= 0) {
+		    if (mirror.right != null && (mirror.rank - mirror.right.rank) == 1) {
+			mirror.rank--;
+			mirror.right.rank++;
+			rotateLeft(mirror);
+		    }
+		    p.rank--;
+		    rotateRight(p);
+		    break;
+		}
+	    } else {
+		if (mirror != null && p.rank - mirror.rank <= 0) {
+		    if (mirror.left != null && (mirror.rank - mirror.left.rank) == 1) {
+			mirror.rank--;
+			mirror.left.rank++;
+			rotateRight(mirror);
+		    }
+		    p.rank--;
+		    rotateLeft(p);
+		    break;
+		}
+	    }
+	    
+	    mirror = (p.parent == p.left) ? p.right : p.left;
+	    p = p.parent;
+	} while (p != null && (p.rank - mirror.rank) != 1);
+    }
+    
+    /**
      * Removes all of the mappings from this map.
      * The map will be empty after this call returns.
      */

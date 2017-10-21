@@ -7,7 +7,23 @@ import org.junit.Test;
 public class TreeMapWAVLTest {
 
     @Test
-    public void testOneLeftRotation() {
+    public void testInsertDoNothing() {
+	TreeMapWAVL<Integer, Integer> x = new TreeMapWAVL<>();
+	x.put(2, 2);
+	x.put(3, 3);
+	assertEquals(0, x.rotations);
+	assertEquals(2, (int)x.root.value);
+	assertEquals(1, x.root.rank);
+
+	x.put(1, 1);
+	assertEquals(2, (int)x.root.value);
+	
+	assertEquals(1, x.root.rank);
+	assertEquals(0, x.rotations);
+    }
+    
+    @Test
+    public void testInsertOneLeftRotation() {
 	TreeMapWAVL<Integer, Integer> x = new TreeMapWAVL<>();
 	x.put(1, 1);
 	x.put(2, 2);
@@ -19,7 +35,7 @@ public class TreeMapWAVLTest {
     }
 
     @Test
-    public void testTwoLeftRotations() {
+    public void testInsertTwoLeftRotations() {
 	TreeMapWAVL<Integer, Integer> x = new TreeMapWAVL<>();
 	x.put(1, 1);
 	x.put(2, 2);
@@ -35,7 +51,7 @@ public class TreeMapWAVLTest {
     }
 
     @Test
-    public void testThreeLeftRotations() {
+    public void testInsertThreeLeftRotations() {
 	TreeMapWAVL<Integer, Integer> x = new TreeMapWAVL<>();
 	x.put(1, 1);
 	x.put(2, 2);
@@ -51,7 +67,7 @@ public class TreeMapWAVLTest {
     }
 
     @Test
-    public void testLeftRightRotation() {
+    public void testInsertLeftRightRotation() {
 	TreeMapWAVL<Integer, Integer> x = new TreeMapWAVL<>();
 	x.put(3, 3);
 	x.put(1, 1);
@@ -63,7 +79,7 @@ public class TreeMapWAVLTest {
     }
 
     @Test
-    public void testRightLeftRotation() {
+    public void testInsertRightLeftRotation() {
 	TreeMapWAVL<Integer, Integer> x = new TreeMapWAVL<>();
 	x.put(3, 3);
 	x.put(6, 6);
@@ -75,7 +91,7 @@ public class TreeMapWAVLTest {
     }
 
     @Test
-    public void testBuildFibonacciTree() {
+    public void testInsertBuildFibonacciTree() {
 	TreeMapWAVL<Integer, Integer> x = new TreeMapWAVL<>();
 	x.put(8, 8);
 	x.put(5, 5);
@@ -91,7 +107,7 @@ public class TreeMapWAVLTest {
     }
 
     @Test
-    public void testTwoRightRotations() {
+    public void testInsertTwoRightRotations() {
 	TreeMapWAVL<Integer, Integer> x = new TreeMapWAVL<>();
 	x.put(5, 5);
 	x.put(4, 4);
@@ -104,5 +120,49 @@ public class TreeMapWAVLTest {
 	assertEquals(4, (int) x.root.value);
 	assertEquals(0, x.root.right.rank);
 	assertEquals(1, x.root.left.rank);
+    }
+    
+    @Test
+    public void testDeleteDoNothing() {
+	TreeMapWAVL<Integer, Integer> x = new TreeMapWAVL<>();
+	x.put(2, 2);
+	x.put(3, 3);
+	x.put(1, 1);
+	assertEquals(2, (int)x.root.value);
+	
+	x.remove(3);
+
+	assertEquals(1, x.root.rank);
+	assertEquals(0, x.rotations);
+    }
+    
+    @Test
+    public void testDeleteOneRightRotation() {
+	TreeMapWAVL<Integer, Integer> x = new TreeMapWAVL<>();
+	x.put(10, 10);
+	x.put(8, 8);
+	x.put(12, 12);
+	x.put(6, 6);
+	
+	x.remove(12);
+	
+	assertEquals(1, x.root.rank);
+	assertEquals(8, (int) x.root.value);
+	assertEquals(1, x.rotations);
+    }
+    
+    @Test
+    public void testDeleteOneLeftRightRotation() {
+	TreeMapWAVL<Integer, Integer> x = new TreeMapWAVL<>();
+	x.put(10, 10);
+	x.put(8, 8);
+	x.put(12, 12);
+	x.put(9, 9);
+	
+	x.remove(12);
+	
+	assertEquals(1, x.root.rank);
+	assertEquals(9, (int) x.root.value);
+	assertEquals(2, x.rotations);
     }
 }
