@@ -23,6 +23,14 @@ public class TreeMapWAVLTest {
     }
     
     @Test
+    public void testInsert100() {
+	TreeMapWAVL<Integer, Integer> x = new TreeMapWAVL<>();
+	for (int i=0; i<100; i++)
+	    x.put(i, i);
+	assertEquals(100, x.size());
+    }
+    
+    @Test
     public void testInsertOneLeftRotation() {
 	TreeMapWAVL<Integer, Integer> x = new TreeMapWAVL<>();
 	x.put(1, 1);
@@ -105,6 +113,16 @@ public class TreeMapWAVLTest {
 
 	assertEquals(0, x.rotations);
     }
+    
+    @Test
+    public void testInsert6() {
+	TreeMapWAVL<Integer, Integer> x = new TreeMapWAVL<>();
+	for (int i=0; i<6; i++)
+	    x.put(i, i);
+	assertEquals(3, x.rotations);
+	assertEquals(3, (int) x.root.value);
+	x.inOrderTraversal(x.root);
+    }
 
     @Test
     public void testInsertTwoRightRotations() {
@@ -131,9 +149,13 @@ public class TreeMapWAVLTest {
 	assertEquals(2, (int)x.root.value);
 	
 	x.remove(3);
-
 	assertEquals(1, x.root.rank);
 	assertEquals(0, x.rotations);
+	
+	// remove root
+	x.remove(2);
+	x.remove(1);
+	assertEquals(0, x.size());
     }
     
     @Test
@@ -164,5 +186,17 @@ public class TreeMapWAVLTest {
 	assertEquals(1, x.root.rank);
 	assertEquals(9, (int) x.root.value);
 	assertEquals(2, x.rotations);
+    }
+    
+    @Test
+    public void testDelete6() {
+	TreeMapWAVL<Integer, Integer> x = new TreeMapWAVL<>();
+	for (int i=0; i<6; i++)
+	    x.put(i, i);
+	for (int i=0; i<6; i++) {
+	    System.out.println(x.root + "Deleting:"+ i);
+	    x.remove(i);
+	}
+	assertEquals(0, x.size());
     }
 }

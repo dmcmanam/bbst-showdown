@@ -496,7 +496,6 @@ If the procedure increases the rank of a node x, so that it becomes equal to the
 	    replacement.parent = p.parent;
 	    Entry<K, V> mirror = null;
 	    if (p.parent == null) {
-		// TODO add unit test here.
 		root = replacement;
 		return;
 	    } else if (p == p.parent.left) {
@@ -511,7 +510,7 @@ If the procedure increases the rank of a node x, so that it becomes equal to the
 	    p.left = p.right = p.parent = null;
 
 	    // TODO
-	    if (mirror == null || (p.parent.rank - mirror.rank) != 1) {
+	    if (mirror == null || (replacement.parent.rank - mirror.rank) != 1) {
 		fixAfterDeletion(replacement.parent, mirror);
 	    }
         } else if (p.parent == null) { // return if we are the only node.
