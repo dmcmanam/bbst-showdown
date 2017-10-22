@@ -10,7 +10,6 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.Spliterator;
 
-import bbst_showdown.TreeMapWAVL.Entry;
 
 /**
  * An AVL tree implementation.
@@ -18,19 +17,21 @@ import bbst_showdown.TreeMapWAVL.Entry;
  * <p>
  * Because AVL trees enforce stricter balance requirements than red-black trees,
  * performance of AVL trees is better than red-black in situations where
- * red-black trees become unbalanced such as inserting 1 million elements
- * in-order.
+ * red-black trees become unbalanced.
  * 
  * <p>
  * This implementation provides guaranteed log(n) time cost for the
  * {@code containsKey}, {@code get}, {@code put} and {@code remove} operations.
  * 
+ * <p>
+ * The starting point for this code was the red-black implementation of TreeMap from the OpenJDK:<BR>
+ * http://hg.openjdk.java.net/jdk8/jdk8/jdk/file/46c727d6ecc2/src/share/classes/java/util/TreeMap.java <BR>
+ * with the <i>fixAfterInsertion</i> and <i> fixAfterDeletion</i> methods replaced.
+ * 
  * @author David McManamon
  *
- * @param <K>
- *            the type of keys maintained by this map
- * @param <V>
- *            the type of mapped values
+ * @param <K> the type of keys maintained by this map
+ * @param <V> the type of mapped values
  */
 public class TreeMapAVL<K, V> extends AbstractMap<K, V> {
 
