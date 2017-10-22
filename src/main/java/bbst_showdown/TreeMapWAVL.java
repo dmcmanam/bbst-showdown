@@ -81,10 +81,10 @@ public class TreeMapWAVL<K, V> extends AbstractMap<K, V> {
     }
     
     public int treeHeight() {
-	return treeHeight(root);
+	return treeHeight(root) - 1;
     }
 
-    public int treeHeight(Entry<K, V> node) {
+    protected int treeHeight(Entry<K, V> node) {
 	if (node == null)
 	    return 0;
 	return (1 + Math.max(treeHeight(node.left), treeHeight(node.right)));

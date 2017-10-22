@@ -123,23 +123,23 @@ public TreeMapRB(SortedMap<K, ? extends V> m) {
 }
 
 
-public int treeHeight() {
-	return treeHeight(root);
-}
+    public int treeHeight() {
+	return treeHeight(root) - 1;
+    }
 
-public int treeHeight(Entry<K,V> node){
-if (node == null)
-	return 0;
-return (1 + Math.max(treeHeight(node.left), treeHeight(node.right)));
-}
+    protected int treeHeight(Entry<K, V> node) {
+	if (node == null)
+	    return 0;
+	return (1 + Math.max(treeHeight(node.left), treeHeight(node.right)));
+    }
 
-public int rotations() {
+    public int rotations() {
 	return rotations;
-}
+    }
 
-public String toString() {
+    public String toString() {
 	return "Red-black tree of size: " + size + ", height: " + treeHeight() + ", rotations " + rotations;
-}
+    }
 
 // Query Operations
 

@@ -7,6 +7,18 @@ import org.junit.Test;
 public class TreeMapWAVLTest {
 
     @Test
+    public void testTreeHeight() {
+	TreeMapWAVL<Integer, Integer> x = new TreeMapWAVL<>();
+	x.put(2, 2);
+	assertEquals(0, x.treeHeight());
+	x.put(3, 3);
+	assertEquals(1, x.treeHeight());
+	x.put(1, 1);
+	x.put(0, 0);
+	assertEquals(2, x.treeHeight());
+    }
+    
+    @Test
     public void testInsertDoNothing() {
 	TreeMapWAVL<Integer, Integer> x = new TreeMapWAVL<>();
 	x.put(2, 2);
