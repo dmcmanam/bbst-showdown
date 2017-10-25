@@ -1053,8 +1053,7 @@ public class TreeMapAVL<K, V> extends AbstractMap<K, V> {
     }
 
     /**
-     * @throws ClassCastException
-     *             {@inheritDoc}
+     * @throws ClassCastException {@inheritDoc}
      * @throws NullPointerException
      *             if the specified key is null and this map uses natural ordering,
      *             or its comparator does not permit null keys
@@ -1065,8 +1064,7 @@ public class TreeMapAVL<K, V> extends AbstractMap<K, V> {
     }
 
     /**
-     * @throws ClassCastException
-     *             {@inheritDoc}
+     * @throws ClassCastException {@inheritDoc}
      * @throws NullPointerException
      *             if the specified key is null and this map uses natural ordering,
      *             or its comparator does not permit null keys
@@ -1077,8 +1075,7 @@ public class TreeMapAVL<K, V> extends AbstractMap<K, V> {
     }
 
     /**
-     * @throws ClassCastException
-     *             {@inheritDoc}
+     * @throws ClassCastException {@inheritDoc}
      * @throws NullPointerException
      *             if the specified key is null and this map uses natural ordering,
      *             or its comparator does not permit null keys
@@ -1089,8 +1086,7 @@ public class TreeMapAVL<K, V> extends AbstractMap<K, V> {
     }
 
     /**
-     * @throws ClassCastException
-     *             {@inheritDoc}
+     * @throws ClassCastException {@inheritDoc}
      * @throws NullPointerException
      *             if the specified key is null and this map uses natural ordering,
      *             or its comparator does not permit null keys
@@ -1101,8 +1097,7 @@ public class TreeMapAVL<K, V> extends AbstractMap<K, V> {
     }
 
     /**
-     * @throws ClassCastException
-     *             {@inheritDoc}
+     * @throws ClassCastException {@inheritDoc}
      * @throws NullPointerException
      *             if the specified key is null and this map uses natural ordering,
      *             or its comparator does not permit null keys
@@ -1125,8 +1120,7 @@ public class TreeMapAVL<K, V> extends AbstractMap<K, V> {
     }
 
     /**
-     * @throws ClassCastException
-     *             {@inheritDoc}
+     * @throws ClassCastException {@inheritDoc}
      * @throws NullPointerException
      *             if the specified key is null and this map uses natural ordering,
      *             or its comparator does not permit null keys
@@ -1137,8 +1131,7 @@ public class TreeMapAVL<K, V> extends AbstractMap<K, V> {
     }
 
     /**
-     * @throws ClassCastException
-     *             {@inheritDoc}
+     * @throws ClassCastException {@inheritDoc}
      * @throws NullPointerException
      *             if the specified key is null and this map uses natural ordering,
      *             or its comparator does not permit null keys

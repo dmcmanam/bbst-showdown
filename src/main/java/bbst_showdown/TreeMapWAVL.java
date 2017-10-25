@@ -363,7 +363,7 @@ If the procedure increases the rank of a node x, so that it becomes equal to the
 	x.rank++;
 	while (x.parent != null && (x.parent.rank - x.rank) != 1) {
 	    Entry<K, V> p = x.parent;
-	    if (p.left == x) { // check if left heavy?
+	    if (p.left == x) { // parent's left node = this so check the left side
 		if (needToRotateLeftHeavy(p)) {
 		    if (x.right != null && (x.rank - x.right.rank) == 1) {
 			x.rank--;
@@ -535,7 +535,7 @@ If the procedure increases the rank of a node x, so that it becomes equal to the
         }
     }
     
-    //mirror node is a term from Knuth's Art of CP, refers to the parent node's other child.
+    //mirror node is a term from Knuth's Art of CP, it refers to the parent node's other child.
     private void fixAfterDeletion(Entry<K, V> p, Entry<K,V> mirror) {
 	do {
 	    p.rank--;

@@ -26,10 +26,10 @@ import java.util.function.Consumer;
  With modifications for book keeping such as tree height and rotations.
  *
  */
-public class TreeMapRB<K,V> extends AbstractMap<K,V>
+public class TreeMapRedBlack<K,V> extends AbstractMap<K,V>
 implements NavigableMap<K,V>, Cloneable, java.io.Serializable {
 	
-	/**
+/**
  * The comparator used to maintain order in this tree map, or
  * null if it uses the natural ordering of its keys.
  *
@@ -63,7 +63,7 @@ private transient int rotations = 0;
  * {@code put(Object key, Object value)} call will throw a
  * {@code ClassCastException}.
  */
-public TreeMapRB() {
+public TreeMapRedBlack() {
     comparator = null;
 }
 
@@ -81,7 +81,7 @@ public TreeMapRB() {
  *        If {@code null}, the {@linkplain Comparable natural
  *        ordering} of the keys will be used.
  */
-public TreeMapRB(Comparator<? super K> comparator) {
+public TreeMapRedBlack(Comparator<? super K> comparator) {
     this.comparator = comparator;
 }
 
@@ -99,7 +99,7 @@ public TreeMapRB(Comparator<? super K> comparator) {
  *         or are not mutually comparable
  * @throws NullPointerException if the specified map is null
  */
-public TreeMapRB(Map<? extends K, ? extends V> m) {
+public TreeMapRedBlack(Map<? extends K, ? extends V> m) {
     comparator = null;
     putAll(m);
 }
@@ -113,7 +113,7 @@ public TreeMapRB(Map<? extends K, ? extends V> m) {
  *         and whose comparator is to be used to sort this map
  * @throws NullPointerException if the specified map is null
  */
-public TreeMapRB(SortedMap<K, ? extends V> m) {
+public TreeMapRedBlack(SortedMap<K, ? extends V> m) {
     comparator = m.comparator();
     try {
         buildFromSorted(m.size(), m.entrySet().iterator(), null, null);
@@ -563,9 +563,9 @@ public void clear() {
  * @return a shallow copy of this map
  */
 public Object clone() {
-    TreeMapRB<?,?> clone;
+    TreeMapRedBlack<?,?> clone;
     try {
-        clone = (TreeMapRB<?,?>) super.clone();
+        clone = (TreeMapRedBlack<?,?>) super.clone();
     } catch (CloneNotSupportedException e) {
         throw new InternalError(e);
     }
@@ -966,11 +966,11 @@ class Values extends AbstractCollection<V> {
     }
 
     public int size() {
-        return TreeMapRB.this.size();
+        return TreeMapRedBlack.this.size();
     }
 
     public boolean contains(Object o) {
-        return TreeMapRB.this.containsValue(o);
+        return TreeMapRedBlack.this.containsValue(o);
     }
 
     public boolean remove(Object o) {
@@ -984,11 +984,11 @@ class Values extends AbstractCollection<V> {
     }
 
     public void clear() {
-        TreeMapRB.this.clear();
+        TreeMapRedBlack.this.clear();
     }
 
     public Spliterator<V> spliterator() {
-        return new ValueSpliterator<K,V>(TreeMapRB.this, null, null, 0, -1, 0);
+        return new ValueSpliterator<K,V>(TreeMapRedBlack.this, null, null, 0, -1, 0);
     }
 }
 
@@ -1020,11 +1020,11 @@ class EntrySet extends AbstractSet<Map.Entry<K,V>> {
     }
 
     public int size() {
-        return TreeMapRB.this.size();
+        return TreeMapRedBlack.this.size();
     }
 
     public void clear() {
-        TreeMapRB.this.clear();
+        TreeMapRedBlack.this.clear();
     }
 
     public Spliterator<Map.Entry<K,V>> spliterator() {
@@ -1053,17 +1053,17 @@ static final class KeySet<E> extends AbstractSet<E> implements NavigableSet<E> {
     KeySet(NavigableMap<E,?> map) { m = map; }
 
     public Iterator<E> iterator() {
-        if (m instanceof TreeMapRB)
-            return ((TreeMapRB<E,?>)m).keyIterator();
+        if (m instanceof TreeMapRedBlack)
+            return ((TreeMapRedBlack<E,?>)m).keyIterator();
         else
-            return ((TreeMapRB.NavigableSubMap<E,?>)m).keyIterator();
+            return ((TreeMapRedBlack.NavigableSubMap<E,?>)m).keyIterator();
     }
 
     public Iterator<E> descendingIterator() {
-        if (m instanceof TreeMapRB)
-            return ((TreeMapRB<E,?>)m).descendingKeyIterator();
+        if (m instanceof TreeMapRedBlack)
+            return ((TreeMapRedBlack<E,?>)m).descendingKeyIterator();
         else
-            return ((TreeMapRB.NavigableSubMap<E,?>)m).descendingKeyIterator();
+            return ((TreeMapRedBlack.NavigableSubMap<E,?>)m).descendingKeyIterator();
     }
 
     public int size() { return m.size(); }
@@ -1240,7 +1240,7 @@ static final boolean valEquals(Object o1, Object o2) {
 /**
  * Return SimpleImmutableEntry for entry, or null if null
  */
-static <K,V> Map.Entry<K,V> exportEntry(TreeMapRB.Entry<K,V> e) {
+static <K,V> Map.Entry<K,V> exportEntry(TreeMapRedBlack.Entry<K,V> e) {
     return (e == null) ? null :
         new AbstractMap.SimpleImmutableEntry<>(e);
 }
@@ -1248,7 +1248,7 @@ static <K,V> Map.Entry<K,V> exportEntry(TreeMapRB.Entry<K,V> e) {
 /**
  * Return key for entry, or null if null
  */
-static <K,V> K keyOrNull(TreeMapRB.Entry<K,V> e) {
+static <K,V> K keyOrNull(TreeMapRedBlack.Entry<K,V> e) {
     return (e == null) ? null : e.key;
 }
 
@@ -1279,7 +1279,7 @@ abstract static class NavigableSubMap<K,V> extends AbstractMap<K,V>
     /**
      * The backing map.
      */
-    final TreeMapRB<K,V> m;
+    final TreeMapRedBlack<K,V> m;
 
     /**
      * Endpoints are represented as triples (fromStart, lo,
@@ -1293,7 +1293,7 @@ abstract static class NavigableSubMap<K,V> extends AbstractMap<K,V>
     final boolean fromStart, toEnd;
     final boolean loInclusive, hiInclusive;
 
-    NavigableSubMap(TreeMapRB<K,V> m,
+    NavigableSubMap(TreeMapRedBlack<K,V> m,
                     boolean fromStart, K lo, boolean loInclusive,
                     boolean toEnd,     K hi, boolean hiInclusive) {
         if (!fromStart && !toEnd) {
@@ -1354,59 +1354,59 @@ abstract static class NavigableSubMap<K,V> extends AbstractMap<K,V>
      * versions that invert senses for descending maps
      */
 
-    final TreeMapRB.Entry<K,V> absLowest() {
-        TreeMapRB.Entry<K,V> e =
+    final TreeMapRedBlack.Entry<K,V> absLowest() {
+        TreeMapRedBlack.Entry<K,V> e =
             (fromStart ?  m.getFirstEntry() :
              (loInclusive ? m.getCeilingEntry(lo) :
                             m.getHigherEntry(lo)));
         return (e == null || tooHigh(e.key)) ? null : e;
     }
 
-    final TreeMapRB.Entry<K,V> absHighest() {
-        TreeMapRB.Entry<K,V> e =
+    final TreeMapRedBlack.Entry<K,V> absHighest() {
+        TreeMapRedBlack.Entry<K,V> e =
             (toEnd ?  m.getLastEntry() :
              (hiInclusive ?  m.getFloorEntry(hi) :
                              m.getLowerEntry(hi)));
         return (e == null || tooLow(e.key)) ? null : e;
     }
 
-    final TreeMapRB.Entry<K,V> absCeiling(K key) {
+    final TreeMapRedBlack.Entry<K,V> absCeiling(K key) {
         if (tooLow(key))
             return absLowest();
-        TreeMapRB.Entry<K,V> e = m.getCeilingEntry(key);
+        TreeMapRedBlack.Entry<K,V> e = m.getCeilingEntry(key);
         return (e == null || tooHigh(e.key)) ? null : e;
     }
 
-    final TreeMapRB.Entry<K,V> absHigher(K key) {
+    final TreeMapRedBlack.Entry<K,V> absHigher(K key) {
         if (tooLow(key))
             return absLowest();
-        TreeMapRB.Entry<K,V> e = m.getHigherEntry(key);
+        TreeMapRedBlack.Entry<K,V> e = m.getHigherEntry(key);
         return (e == null || tooHigh(e.key)) ? null : e;
     }
 
-    final TreeMapRB.Entry<K,V> absFloor(K key) {
+    final TreeMapRedBlack.Entry<K,V> absFloor(K key) {
         if (tooHigh(key))
             return absHighest();
-        TreeMapRB.Entry<K,V> e = m.getFloorEntry(key);
+        TreeMapRedBlack.Entry<K,V> e = m.getFloorEntry(key);
         return (e == null || tooLow(e.key)) ? null : e;
     }
 
-    final TreeMapRB.Entry<K,V> absLower(K key) {
+    final TreeMapRedBlack.Entry<K,V> absLower(K key) {
         if (tooHigh(key))
             return absHighest();
-        TreeMapRB.Entry<K,V> e = m.getLowerEntry(key);
+        TreeMapRedBlack.Entry<K,V> e = m.getLowerEntry(key);
         return (e == null || tooLow(e.key)) ? null : e;
     }
 
     /** Returns the absolute high fence for ascending traversal */
-    final TreeMapRB.Entry<K,V> absHighFence() {
+    final TreeMapRedBlack.Entry<K,V> absHighFence() {
         return (toEnd ? null : (hiInclusive ?
                                 m.getHigherEntry(hi) :
                                 m.getCeilingEntry(hi)));
     }
 
     /** Return the absolute low fence for descending traversal  */
-    final TreeMapRB.Entry<K,V> absLowFence() {
+    final TreeMapRedBlack.Entry<K,V> absLowFence() {
         return (fromStart ? null : (loInclusive ?
                                     m.getLowerEntry(lo) :
                                     m.getFloorEntry(lo)));
@@ -1415,12 +1415,12 @@ abstract static class NavigableSubMap<K,V> extends AbstractMap<K,V>
     // Abstract methods defined in ascending vs descending classes
     // These relay to the appropriate absolute versions
 
-    abstract TreeMapRB.Entry<K,V> subLowest();
-    abstract TreeMapRB.Entry<K,V> subHighest();
-    abstract TreeMapRB.Entry<K,V> subCeiling(K key);
-    abstract TreeMapRB.Entry<K,V> subHigher(K key);
-    abstract TreeMapRB.Entry<K,V> subFloor(K key);
-    abstract TreeMapRB.Entry<K,V> subLower(K key);
+    abstract TreeMapRedBlack.Entry<K,V> subLowest();
+    abstract TreeMapRedBlack.Entry<K,V> subHighest();
+    abstract TreeMapRedBlack.Entry<K,V> subCeiling(K key);
+    abstract TreeMapRedBlack.Entry<K,V> subHigher(K key);
+    abstract TreeMapRedBlack.Entry<K,V> subFloor(K key);
+    abstract TreeMapRedBlack.Entry<K,V> subLower(K key);
 
     /** Returns ascending iterator from the perspective of this submap */
     abstract Iterator<K> keyIterator();
@@ -1507,7 +1507,7 @@ abstract static class NavigableSubMap<K,V> extends AbstractMap<K,V>
     }
 
     public final Map.Entry<K,V> pollFirstEntry() {
-        TreeMapRB.Entry<K,V> e = subLowest();
+        TreeMapRedBlack.Entry<K,V> e = subLowest();
         Map.Entry<K,V> result = exportEntry(e);
         if (e != null)
             m.deleteEntry(e);
@@ -1515,7 +1515,7 @@ abstract static class NavigableSubMap<K,V> extends AbstractMap<K,V>
     }
 
     public final Map.Entry<K,V> pollLastEntry() {
-        TreeMapRB.Entry<K,V> e = subHighest();
+        TreeMapRedBlack.Entry<K,V> e = subHighest();
         Map.Entry<K,V> result = exportEntry(e);
         if (e != null)
             m.deleteEntry(e);
@@ -1530,7 +1530,7 @@ abstract static class NavigableSubMap<K,V> extends AbstractMap<K,V>
     public final NavigableSet<K> navigableKeySet() {
         KeySet<K> nksv = navigableKeySetView;
         return (nksv != null) ? nksv :
-            (navigableKeySetView = new TreeMapRB.KeySet<>(this));
+            (navigableKeySetView = new TreeMapRedBlack.KeySet<>(this));
     }
 
     public final Set<K> keySet() {
@@ -1574,7 +1574,7 @@ abstract static class NavigableSubMap<K,V> extends AbstractMap<K,V>
         }
 
         public boolean isEmpty() {
-            TreeMapRB.Entry<K,V> n = absLowest();
+            TreeMapRedBlack.Entry<K,V> n = absLowest();
             return n == null || tooHigh(n.key);
         }
 
@@ -1585,7 +1585,7 @@ abstract static class NavigableSubMap<K,V> extends AbstractMap<K,V>
             Object key = entry.getKey();
             if (!inRange(key))
                 return false;
-            TreeMapRB.Entry<?,?> node = m.getEntry(key);
+            TreeMapRedBlack.Entry<?,?> node = m.getEntry(key);
             return node != null &&
                 valEquals(node.getValue(), entry.getValue());
         }
@@ -1597,7 +1597,7 @@ abstract static class NavigableSubMap<K,V> extends AbstractMap<K,V>
             Object key = entry.getKey();
             if (!inRange(key))
                 return false;
-            TreeMapRB.Entry<K,V> node = m.getEntry(key);
+            TreeMapRedBlack.Entry<K,V> node = m.getEntry(key);
             if (node!=null && valEquals(node.getValue(),
                                         entry.getValue())) {
                 m.deleteEntry(node);
@@ -1611,13 +1611,13 @@ abstract static class NavigableSubMap<K,V> extends AbstractMap<K,V>
      * Iterators for SubMaps
      */
     abstract class SubMapIterator<T> implements Iterator<T> {
-        TreeMapRB.Entry<K,V> lastReturned;
-        TreeMapRB.Entry<K,V> next;
+        TreeMapRedBlack.Entry<K,V> lastReturned;
+        TreeMapRedBlack.Entry<K,V> next;
         final Object fenceKey;
         int expectedModCount;
 
-        SubMapIterator(TreeMapRB.Entry<K,V> first,
-                       TreeMapRB.Entry<K,V> fence) {
+        SubMapIterator(TreeMapRedBlack.Entry<K,V> first,
+                       TreeMapRedBlack.Entry<K,V> fence) {
             expectedModCount = m.modCount;
             lastReturned = null;
             next = first;
@@ -1628,8 +1628,8 @@ abstract static class NavigableSubMap<K,V> extends AbstractMap<K,V>
             return next != null && next.key != fenceKey;
         }
 
-        final TreeMapRB.Entry<K,V> nextEntry() {
-            TreeMapRB.Entry<K,V> e = next;
+        final TreeMapRedBlack.Entry<K,V> nextEntry() {
+            TreeMapRedBlack.Entry<K,V> e = next;
             if (e == null || e.key == fenceKey)
                 throw new NoSuchElementException();
             if (m.modCount != expectedModCount)
@@ -1639,8 +1639,8 @@ abstract static class NavigableSubMap<K,V> extends AbstractMap<K,V>
             return e;
         }
 
-        final TreeMapRB.Entry<K,V> prevEntry() {
-            TreeMapRB.Entry<K,V> e = next;
+        final TreeMapRedBlack.Entry<K,V> prevEntry() {
+            TreeMapRedBlack.Entry<K,V> e = next;
             if (e == null || e.key == fenceKey)
                 throw new NoSuchElementException();
             if (m.modCount != expectedModCount)
@@ -1676,8 +1676,8 @@ abstract static class NavigableSubMap<K,V> extends AbstractMap<K,V>
     }
 
     final class SubMapEntryIterator extends SubMapIterator<Map.Entry<K,V>> {
-        SubMapEntryIterator(TreeMapRB.Entry<K,V> first,
-                            TreeMapRB.Entry<K,V> fence) {
+        SubMapEntryIterator(TreeMapRedBlack.Entry<K,V> first,
+                            TreeMapRedBlack.Entry<K,V> fence) {
             super(first, fence);
         }
         public Map.Entry<K,V> next() {
@@ -1689,8 +1689,8 @@ abstract static class NavigableSubMap<K,V> extends AbstractMap<K,V>
     }
 
     final class DescendingSubMapEntryIterator extends SubMapIterator<Map.Entry<K,V>> {
-        DescendingSubMapEntryIterator(TreeMapRB.Entry<K,V> last,
-                                      TreeMapRB.Entry<K,V> fence) {
+        DescendingSubMapEntryIterator(TreeMapRedBlack.Entry<K,V> last,
+                                      TreeMapRedBlack.Entry<K,V> fence) {
             super(last, fence);
         }
 
@@ -1705,8 +1705,8 @@ abstract static class NavigableSubMap<K,V> extends AbstractMap<K,V>
     // Implement minimal Spliterator as KeySpliterator backup
     final class SubMapKeyIterator extends SubMapIterator<K>
         implements Spliterator<K> {
-        SubMapKeyIterator(TreeMapRB.Entry<K,V> first,
-                          TreeMapRB.Entry<K,V> fence) {
+        SubMapKeyIterator(TreeMapRedBlack.Entry<K,V> first,
+                          TreeMapRedBlack.Entry<K,V> fence) {
             super(first, fence);
         }
         public K next() {
@@ -1743,8 +1743,8 @@ abstract static class NavigableSubMap<K,V> extends AbstractMap<K,V>
 
     final class DescendingSubMapKeyIterator extends SubMapIterator<K>
         implements Spliterator<K> {
-        DescendingSubMapKeyIterator(TreeMapRB.Entry<K,V> last,
-                                    TreeMapRB.Entry<K,V> fence) {
+        DescendingSubMapKeyIterator(TreeMapRedBlack.Entry<K,V> last,
+                                    TreeMapRedBlack.Entry<K,V> fence) {
             super(last, fence);
         }
         public K next() {
@@ -1782,7 +1782,7 @@ abstract static class NavigableSubMap<K,V> extends AbstractMap<K,V>
 static final class AscendingSubMap<K,V> extends NavigableSubMap<K,V> {
     private static final long serialVersionUID = 912986545866124060L;
 
-    AscendingSubMap(TreeMapRB<K,V> m,
+    AscendingSubMap(TreeMapRedBlack<K,V> m,
                     boolean fromStart, K lo, boolean loInclusive,
                     boolean toEnd,     K hi, boolean hiInclusive) {
         super(m, fromStart, lo, loInclusive, toEnd, hi, hiInclusive);
@@ -1851,12 +1851,12 @@ static final class AscendingSubMap<K,V> extends NavigableSubMap<K,V> {
         return (es != null) ? es : (entrySetView = new AscendingEntrySetView());
     }
 
-    TreeMapRB.Entry<K,V> subLowest()       { return absLowest(); }
-    TreeMapRB.Entry<K,V> subHighest()      { return absHighest(); }
-    TreeMapRB.Entry<K,V> subCeiling(K key) { return absCeiling(key); }
-    TreeMapRB.Entry<K,V> subHigher(K key)  { return absHigher(key); }
-    TreeMapRB.Entry<K,V> subFloor(K key)   { return absFloor(key); }
-    TreeMapRB.Entry<K,V> subLower(K key)   { return absLower(key); }
+    TreeMapRedBlack.Entry<K,V> subLowest()       { return absLowest(); }
+    TreeMapRedBlack.Entry<K,V> subHighest()      { return absHighest(); }
+    TreeMapRedBlack.Entry<K,V> subCeiling(K key) { return absCeiling(key); }
+    TreeMapRedBlack.Entry<K,V> subHigher(K key)  { return absHigher(key); }
+    TreeMapRedBlack.Entry<K,V> subFloor(K key)   { return absFloor(key); }
+    TreeMapRedBlack.Entry<K,V> subLower(K key)   { return absLower(key); }
 }
 
 /**
@@ -1864,7 +1864,7 @@ static final class AscendingSubMap<K,V> extends NavigableSubMap<K,V> {
  */
 static final class DescendingSubMap<K,V>  extends NavigableSubMap<K,V> {
     private static final long serialVersionUID = 912986545866120460L;
-    DescendingSubMap(TreeMapRB<K,V> m,
+    DescendingSubMap(TreeMapRedBlack<K,V> m,
                     boolean fromStart, K lo, boolean loInclusive,
                     boolean toEnd,     K hi, boolean hiInclusive) {
         super(m, fromStart, lo, loInclusive, toEnd, hi, hiInclusive);
@@ -1936,12 +1936,12 @@ static final class DescendingSubMap<K,V>  extends NavigableSubMap<K,V> {
         return (es != null) ? es : (entrySetView = new DescendingEntrySetView());
     }
 
-    TreeMapRB.Entry<K,V> subLowest()       { return absHighest(); }
-    TreeMapRB.Entry<K,V> subHighest()      { return absLowest(); }
-    TreeMapRB.Entry<K,V> subCeiling(K key) { return absFloor(key); }
-    TreeMapRB.Entry<K,V> subHigher(K key)  { return absLower(key); }
-    TreeMapRB.Entry<K,V> subFloor(K key)   { return absCeiling(key); }
-    TreeMapRB.Entry<K,V> subLower(K key)   { return absHigher(key); }
+    TreeMapRedBlack.Entry<K,V> subLowest()       { return absHighest(); }
+    TreeMapRedBlack.Entry<K,V> subHighest()      { return absLowest(); }
+    TreeMapRedBlack.Entry<K,V> subCeiling(K key) { return absFloor(key); }
+    TreeMapRedBlack.Entry<K,V> subHigher(K key)  { return absLower(key); }
+    TreeMapRedBlack.Entry<K,V> subFloor(K key)   { return absCeiling(key); }
+    TreeMapRedBlack.Entry<K,V> subLower(K key)   { return absHigher(key); }
 }
 
 /**
@@ -1959,7 +1959,7 @@ private class SubMap extends AbstractMap<K,V>
     private boolean fromStart = false, toEnd = false;
     private K fromKey, toKey;
     private Object readResolve() {
-        return new AscendingSubMap<>(TreeMapRB.this,
+        return new AscendingSubMap<>(TreeMapRedBlack.this,
                                      fromStart, fromKey, true,
                                      toEnd, toKey, false);
     }
@@ -2078,7 +2078,7 @@ final Entry<K,V> getLastEntry() {
 /**
  * Returns the successor of the specified Entry, or null if no such.
  */
-static <K,V> TreeMapRB.Entry<K,V> successor(Entry<K,V> t) {
+static <K,V> TreeMapRedBlack.Entry<K,V> successor(Entry<K,V> t) {
     if (t == null)
         return null;
     else if (t.right != null) {
@@ -2550,18 +2550,18 @@ private static int computeRedLevel(int sz) {
  * returns null.
  */
 static <K> Spliterator<K> keySpliteratorFor(NavigableMap<K,?> m) {
-    if (m instanceof TreeMapRB) {
-        @SuppressWarnings("unchecked") TreeMapRB<K,Object> t =
-            (TreeMapRB<K,Object>) m;
+    if (m instanceof TreeMapRedBlack) {
+        @SuppressWarnings("unchecked") TreeMapRedBlack<K,Object> t =
+            (TreeMapRedBlack<K,Object>) m;
         return t.keySpliterator();
     }
     if (m instanceof DescendingSubMap) {
         @SuppressWarnings("unchecked") DescendingSubMap<K,?> dm =
             (DescendingSubMap<K,?>) m;
-        TreeMapRB<K,?> tm = dm.m;
+        TreeMapRedBlack<K,?> tm = dm.m;
         if (dm == tm.descendingMap) {
-            @SuppressWarnings("unchecked") TreeMapRB<K,Object> t =
-                (TreeMapRB<K,Object>) tm;
+            @SuppressWarnings("unchecked") TreeMapRedBlack<K,Object> t =
+                (TreeMapRedBlack<K,Object>) tm;
             return t.descendingKeySpliterator();
         }
     }
@@ -2604,15 +2604,15 @@ final Spliterator<K> descendingKeySpliterator() {
  * negative size estimates: -1 for ascend, -2 for descend.
  */
 static class TreeMapSpliterator<K,V> {
-    final TreeMapRB<K,V> tree;
-    TreeMapRB.Entry<K,V> current; // traverser; initially first node in range
-    TreeMapRB.Entry<K,V> fence;   // one past last, or null
+    final TreeMapRedBlack<K,V> tree;
+    TreeMapRedBlack.Entry<K,V> current; // traverser; initially first node in range
+    TreeMapRedBlack.Entry<K,V> fence;   // one past last, or null
     int side;                   // 0: top, -1: is a left split, +1: right
     int est;                    // size estimate (exact only for top-level)
     int expectedModCount;       // for CME checks
 
-    TreeMapSpliterator(TreeMapRB<K,V> tree,
-                       TreeMapRB.Entry<K,V> origin, TreeMapRB.Entry<K,V> fence,
+    TreeMapSpliterator(TreeMapRedBlack<K,V> tree,
+                       TreeMapRedBlack.Entry<K,V> origin, TreeMapRedBlack.Entry<K,V> fence,
                        int side, int est, int expectedModCount) {
         this.tree = tree;
         this.current = origin;
@@ -2623,7 +2623,7 @@ static class TreeMapSpliterator<K,V> {
     }
 
     final int getEstimate() { // force initialization
-        int s; TreeMapRB<K,V> t;
+        int s; TreeMapRedBlack<K,V> t;
         if ((s = est) < 0) {
             if ((t = tree) != null) {
                 current = (s == -1) ? t.getFirstEntry() : t.getLastEntry();
@@ -2644,8 +2644,8 @@ static class TreeMapSpliterator<K,V> {
 static final class KeySpliterator<K,V>
     extends TreeMapSpliterator<K,V>
     implements Spliterator<K> {
-    KeySpliterator(TreeMapRB<K,V> tree,
-                   TreeMapRB.Entry<K,V> origin, TreeMapRB.Entry<K,V> fence,
+    KeySpliterator(TreeMapRedBlack<K,V> tree,
+                   TreeMapRedBlack.Entry<K,V> origin, TreeMapRedBlack.Entry<K,V> fence,
                    int side, int est, int expectedModCount) {
         super(tree, origin, fence, side, est, expectedModCount);
     }
@@ -2654,7 +2654,7 @@ static final class KeySpliterator<K,V>
         if (est < 0)
             getEstimate(); // force initialization
         int d = side;
-        TreeMapRB.Entry<K,V> e = current, f = fence,
+        TreeMapRedBlack.Entry<K,V> e = current, f = fence,
             s = ((e == null || e == f) ? null :      // empty
                  (d == 0)              ? tree.root : // was top
                  (d >  0)              ? e.right :   // was right
@@ -2674,7 +2674,7 @@ static final class KeySpliterator<K,V>
             throw new NullPointerException();
         if (est < 0)
             getEstimate(); // force initialization
-        TreeMapRB.Entry<K,V> f = fence, e, p, pl;
+        TreeMapRedBlack.Entry<K,V> f = fence, e, p, pl;
         if ((e = current) != null && e != f) {
             current = f; // exhaust
             do {
@@ -2694,7 +2694,7 @@ static final class KeySpliterator<K,V>
     }
 
     public boolean tryAdvance(Consumer<? super K> action) {
-        TreeMapRB.Entry<K,V> e;
+        TreeMapRedBlack.Entry<K,V> e;
         if (action == null)
             throw new NullPointerException();
         if (est < 0)
@@ -2722,8 +2722,8 @@ static final class KeySpliterator<K,V>
 static final class DescendingKeySpliterator<K,V>
     extends TreeMapSpliterator<K,V>
     implements Spliterator<K> {
-    DescendingKeySpliterator(TreeMapRB<K,V> tree,
-                             TreeMapRB.Entry<K,V> origin, TreeMapRB.Entry<K,V> fence,
+    DescendingKeySpliterator(TreeMapRedBlack<K,V> tree,
+                             TreeMapRedBlack.Entry<K,V> origin, TreeMapRedBlack.Entry<K,V> fence,
                              int side, int est, int expectedModCount) {
         super(tree, origin, fence, side, est, expectedModCount);
     }
@@ -2732,7 +2732,7 @@ static final class DescendingKeySpliterator<K,V>
         if (est < 0)
             getEstimate(); // force initialization
         int d = side;
-        TreeMapRB.Entry<K,V> e = current, f = fence,
+        TreeMapRedBlack.Entry<K,V> e = current, f = fence,
                 s = ((e == null || e == f) ? null :      // empty
                      (d == 0)              ? tree.root : // was top
                      (d <  0)              ? e.left :    // was left
@@ -2752,7 +2752,7 @@ static final class DescendingKeySpliterator<K,V>
             throw new NullPointerException();
         if (est < 0)
             getEstimate(); // force initialization
-        TreeMapRB.Entry<K,V> f = fence, e, p, pr;
+        TreeMapRedBlack.Entry<K,V> f = fence, e, p, pr;
         if ((e = current) != null && e != f) {
             current = f; // exhaust
             do {
@@ -2772,7 +2772,7 @@ static final class DescendingKeySpliterator<K,V>
     }
 
     public boolean tryAdvance(Consumer<? super K> action) {
-        TreeMapRB.Entry<K,V> e;
+        TreeMapRedBlack.Entry<K,V> e;
         if (action == null)
             throw new NullPointerException();
         if (est < 0)
@@ -2795,8 +2795,8 @@ static final class DescendingKeySpliterator<K,V>
 static final class ValueSpliterator<K,V>
         extends TreeMapSpliterator<K,V>
         implements Spliterator<V> {
-    ValueSpliterator(TreeMapRB<K,V> tree,
-                     TreeMapRB.Entry<K,V> origin, TreeMapRB.Entry<K,V> fence,
+    ValueSpliterator(TreeMapRedBlack<K,V> tree,
+                     TreeMapRedBlack.Entry<K,V> origin, TreeMapRedBlack.Entry<K,V> fence,
                      int side, int est, int expectedModCount) {
         super(tree, origin, fence, side, est, expectedModCount);
     }
@@ -2805,7 +2805,7 @@ static final class ValueSpliterator<K,V>
         if (est < 0)
             getEstimate(); // force initialization
         int d = side;
-        TreeMapRB.Entry<K,V> e = current, f = fence,
+        TreeMapRedBlack.Entry<K,V> e = current, f = fence,
                 s = ((e == null || e == f) ? null :      // empty
                      (d == 0)              ? tree.root : // was top
                      (d >  0)              ? e.right :   // was right
@@ -2825,7 +2825,7 @@ static final class ValueSpliterator<K,V>
             throw new NullPointerException();
         if (est < 0)
             getEstimate(); // force initialization
-        TreeMapRB.Entry<K,V> f = fence, e, p, pl;
+        TreeMapRedBlack.Entry<K,V> f = fence, e, p, pl;
         if ((e = current) != null && e != f) {
             current = f; // exhaust
             do {
@@ -2845,7 +2845,7 @@ static final class ValueSpliterator<K,V>
     }
 
     public boolean tryAdvance(Consumer<? super V> action) {
-        TreeMapRB.Entry<K,V> e;
+        TreeMapRedBlack.Entry<K,V> e;
         if (action == null)
             throw new NullPointerException();
         if (est < 0)
@@ -2867,8 +2867,8 @@ static final class ValueSpliterator<K,V>
 static final class EntrySpliterator<K,V, Serializable>
     extends TreeMapSpliterator<K,V>
     implements Spliterator<Map.Entry<K,V>> {
-    EntrySpliterator(TreeMapRB<K,V> tree,
-                     TreeMapRB.Entry<K,V> origin, TreeMapRB.Entry<K,V> fence,
+    EntrySpliterator(TreeMapRedBlack<K,V> tree,
+                     TreeMapRedBlack.Entry<K,V> origin, TreeMapRedBlack.Entry<K,V> fence,
                      int side, int est, int expectedModCount) {
         super(tree, origin, fence, side, est, expectedModCount);
     }
@@ -2880,7 +2880,7 @@ static final class EntrySpliterator<K,V, Serializable>
             throw new NullPointerException();
         if (est < 0)
             getEstimate(); // force initialization
-        TreeMapRB.Entry<K,V> f = fence, e, p, pl;
+        TreeMapRedBlack.Entry<K,V> f = fence, e, p, pl;
         if ((e = current) != null && e != f) {
             current = f; // exhaust
             do {
@@ -2900,7 +2900,7 @@ static final class EntrySpliterator<K,V, Serializable>
     }
 
     public boolean tryAdvance(Consumer<? super Map.Entry<K,V>> action) {
-        TreeMapRB.Entry<K,V> e;
+        TreeMapRedBlack.Entry<K,V> e;
         if (action == null)
             throw new NullPointerException();
         if (est < 0)
@@ -2940,5 +2940,4 @@ static final class EntrySpliterator<K,V, Serializable>
 		return null;
 	}
 }
-
 }

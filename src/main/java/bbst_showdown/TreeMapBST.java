@@ -21,12 +21,12 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
 /**
- * No re-balance called on insert()
+ * No re-balance called on insert().  A BST.
  */
 public class TreeMapBST<K,V> extends AbstractMap<K,V>
 implements NavigableMap<K,V>, Cloneable, java.io.Serializable {
 	
-	/**
+/**
  * The comparator used to maintain order in this tree map, or
  * null if it uses the natural ordering of its keys.
  *
