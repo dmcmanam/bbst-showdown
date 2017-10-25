@@ -19,7 +19,8 @@ Comparing in-order insertions with OpenJDK’s JDK 1.8 TreeMap and this AVL impl
 | AVL  | 36ms  | 192ms |
 | Red-black  | 54ms  | 323ms |
 
-Balanced binary trees such as red-black, AVL and WAVL can have a reputation for being difficult to code, when each tree transformation necessary for insert and delete is
+Balanced binary trees such as red-black, AVL and WAVL can have a reputation for being difficult to code, 
+when each tree transformation necessary for insert and delete is
 drawn out then it becomes clear that the code will be quick to implement.
 
 ## The AVL vs. Red-black Tree History

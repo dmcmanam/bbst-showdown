@@ -3,20 +3,20 @@ package bbst_showdown;
 import java.util.Comparator;
 
 /**
- * There are many elegant online AVL implementations that use recursion and height.  This AVL insert implementation uses balance factor instead of height
- * and is therefore both faster and less elegant than the common internet implementation.  
+ * There are many elegant online AVL implementations that use recursion and height. <BR>
+ * This AVL insert implementation uses balance factor instead of height which adds some
+ * complexity compared to the most common recursive implementation.
  * 
  * @author David McManamon
  *
  * @param <K> the type of keys maintained by this map
  * @param <V> the type of mapped values
  */
-public class TreeMapAVLRec<K,V> extends TreeMapAVL<K,V> {
-	private static final long serialVersionUID = 4315639323091225439L;
+public class TreeMapAVLRec<K, V> extends TreeMapAVL<K, V> {
 
-	public TreeMapAVLRec() {
-    		super();
-    } 
+    public TreeMapAVLRec() {
+	super();
+    }
 	
     public V put(K key, V value) {
         Entry<K,V> t = root;
@@ -88,62 +88,63 @@ public class TreeMapAVLRec<K,V> extends TreeMapAVL<K,V> {
      * @param x the subtree
      * @return the subtree with restored AVL property
      */
-    private Entry<K,V> balance(Entry<K,V> x) {
-        if (x.balance == -2) {
-        		if (x.left.balance == 1) {
-				int lrBalance = x.left.right.balance;
-				x.left.right.balance = 0;
-				x.left.balance = 0;
-				x.balance = 0;
-				if (lrBalance == 1)
-					x.left.balance = -1;
-				else if (lrBalance == -1)
-					x.balance = 1;
-                x.left = rotateLeft(x.left);
-                x = rotateRight(x);
-            } else {
-        			x.balance = 0;
-        			x.left.balance = 0;
-        			x = rotateRight(x);
-            }
-        } else if (x.balance == 2) {
-        		if (x.right.balance == -1) {
-				int rlBalance = x.right.left.balance;
-				x.right.left.balance = 0;
-				x.right.balance = 0;
-				x.balance = 0;
-				if (rlBalance == 1)
-					x.balance = -1;
-				else if (rlBalance == -1)
-					x.right.balance = 1;
-				x.right = rotateRight(x.right);
-				x = rotateLeft(x);
-            } else {
-        			x.balance = 0;
-        			x.right.balance = 0;
-        			x = rotateLeft(x);
-            }
-        }
-        return x;
+    private Entry<K, V> balance(Entry<K, V> x) {
+	if (x.balance == -2) {
+	    if (x.left.balance == 1) {
+		int lrBalance = x.left.right.balance;
+		x.left.right.balance = 0;
+		x.left.balance = 0;
+		x.balance = 0;
+		if (lrBalance == 1)
+		    x.left.balance = -1;
+		else if (lrBalance == -1)
+		    x.balance = 1;
+		x.left = rotateLeft(x.left);
+		x = rotateRight(x);
+	    } else {
+		x.balance = 0;
+		x.left.balance = 0;
+		x = rotateRight(x);
+	    }
+	} else if (x.balance == 2) {
+	    if (x.right.balance == -1) {
+		int rlBalance = x.right.left.balance;
+		x.right.left.balance = 0;
+		x.right.balance = 0;
+		x.balance = 0;
+		if (rlBalance == 1)
+		    x.balance = -1;
+		else if (rlBalance == -1)
+		    x.right.balance = 1;
+		x.right = rotateRight(x.right);
+		x = rotateLeft(x);
+	    } else {
+		x.balance = 0;
+		x.right.balance = 0;
+		x = rotateLeft(x);
+	    }
+	}
+	return x;
     }
-    
-	private Entry<K, V> rotateLeft(Entry<K, V> p) {
-		Entry<K, V> r = p.right;
-		p.right = r.left;
-		r.left = p;
-		rotations++;
-		return r;
-	}
-    
-	private Entry<K, V> rotateRight(Entry<K, V> p) {
-		Entry<K, V> l = p.left;
-		p.left = l.right;
-		l.right = p;
-		rotations++;
-		return l;
-	}
 
-	public String toString() {
-		return "AVL(recursive w/balance factor) tree of size: " + size + ", height: " + treeHeight() + ", rotations " + rotations;
-	}
+    private Entry<K, V> rotateLeft(Entry<K, V> p) {
+	Entry<K, V> r = p.right;
+	p.right = r.left;
+	r.left = p;
+	rotations++;
+	return r;
+    }
+
+    private Entry<K, V> rotateRight(Entry<K, V> p) {
+	Entry<K, V> l = p.left;
+	p.left = l.right;
+	l.right = p;
+	rotations++;
+	return l;
+    }
+
+    public String toString() {
+	return "AVL(recursive w/balance factor) tree of size: " + size + ", height: " + treeHeight() + ", rotations "
+		+ rotations;
+    }
 }

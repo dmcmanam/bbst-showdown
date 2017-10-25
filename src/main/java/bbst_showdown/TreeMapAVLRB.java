@@ -205,7 +205,7 @@ public class TreeMapAVLRB<K, V> extends AbstractMap<K, V> {
         }
 
         public String toString() {
-            return key + "=" + value;
+            return key + "=" + value + "," + deltaR;
         }
     }
     
@@ -338,6 +338,7 @@ public class TreeMapAVLRB<K, V> extends AbstractMap<K, V> {
 	}
 
 	if (sibling == null) {
+	    System.out.println("INSERTING:" + e);
 	    fixAfterInsertion(parent);
 	}
 
@@ -369,6 +370,7 @@ If the procedure increases the rank of a node x, so that it becomes equal to the
 	    if (p.left == x) { // node was added on left so check if left side is unbalanced
 		Entry<K, V> sibling = p.right;
 		if (sibling == null || sibling.deltaR == TWO) { // need to rebalance
+		    System.out.println("ROTATING:" + sibling);
 		    if (sibling != null)
 			sibling.deltaR = ONE;
 		    
@@ -384,6 +386,7 @@ If the procedure increases the rank of a node x, so that it becomes equal to the
 	    } else {
 		Entry<K, V> sibling = p.left;
 		if (sibling == null || sibling.deltaR == TWO) { // need to rebalance
+		    System.out.println("ROTATING 2");
 		    if (sibling != null)
 			sibling.deltaR = ONE;
 		    
@@ -394,6 +397,8 @@ If the procedure increases the rank of a node x, so that it becomes equal to the
 		    rotateLeft(p);
 		    break;
 		} else if (sibling.deltaR == ONE) {
+		    if ((int) x.value == 2130768989)
+			System.out.println("HERE");
 		    sibling.deltaR = TWO;
 		}
 	    }
@@ -652,4 +657,57 @@ If the procedure increases the rank of a node x, so that it becomes equal to the
 	System.out.println(x.value + ", " + x.deltaR);
 	inOrderTraversal(x.right);
     }
+    public void printSubtree(int indent, Entry<K, V> x) {
+	  for( int i = 0; i < indent; ++i) {
+	    System.out.print(" ");
+	  }
+
+	  if(x.left != null || x.right != null) {
+	    System.out.println("(" + x.value);     
+	    if (x.left != null)
+		printSubtree(indent + 12, x.left); //this is a recursive call, alternatively use the indent formula above if you don't use recursion
+	    if (x.right != null)
+		printSubtree(indent + 12, x.right);
+
+	    //we have a new line so print the indent again
+	    for( int i = 0; i < indent; ++i) {
+	      System.out.print(" ");
+	    }
+	    System.out.println(")"); 
+	  } else if(x.value != null) {
+	    System.out.println(x.value);
+	  } else { //empty/non existing node
+	    System.out.println("()");
+	  }
+	}
+    
+    public static void main(String[] agrs) {
+ 	String fileName = "randomInts.txt";
+ 	java.io.File file = new java.io.File(fileName);
+
+ 	try {
+ 	    java.util.Scanner inputStream = new java.util.Scanner(file);
+ 	    while (inputStream.hasNext()) {
+ 		String data = inputStream.next();
+ 		String[] values = data.split(",");
+ 		Integer[] v = new Integer[1000000];
+ 		for (int i = 0; i < 1000000; i++) {
+ 		    v[i] = Integer.parseInt(values[i]);
+ 		}
+ 		TreeMapAVLRB<Integer, Integer> x = new TreeMapAVLRB<Integer, Integer>();
+ 		long start = System.currentTimeMillis();
+ 		for (int i = 0; i < 23; i++) {
+ 		    x.put(v[i], v[i]);
+ 		}
+ 		long stop = System.currentTimeMillis();
+ 		x.printSubtree(0, x.root);
+ 		
+ 		System.out.println("Time red-black:" + (stop - start) + " rotations:" + x.rotations() + " height:" + x.treeHeight());
+ 	    }
+ 	    inputStream.close();
+ 	} catch (java.io.FileNotFoundException e) {
+ 	    e.printStackTrace();
+ 	}
+     }
+
 }
