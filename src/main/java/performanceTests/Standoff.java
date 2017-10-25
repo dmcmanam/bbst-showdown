@@ -31,7 +31,7 @@ public class Standoff {
 	maps.add(wavl);	    // 2=wavl
 	
 	// TODO update the integer to choose a different tree implementation
-	Map<Integer, Integer> treeMap = maps.get(0);
+	Map<Integer, Integer> treeMap = maps.get(1);
 	
 	System.out.println("Results for inserting 1 million random integers: ");
 
@@ -39,7 +39,7 @@ public class Standoff {
 	Integer mean = insert(treeMap, randomInts);
 	System.out.println("  Mean insertion time: " + mean + "ms, " + treeMap);
 	
-	System.out.println("Results for inserting 300,000 sequential integers: ");
+	System.out.println("Results for inserting 1 million sequential integers: ");
 	mean = insertInOrder(treeMap, 1000000);
 	System.out.println("  Mean insertion time: " + mean + "ms, " + treeMap);
     }
