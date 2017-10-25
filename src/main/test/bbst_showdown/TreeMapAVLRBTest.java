@@ -148,6 +148,20 @@ public class TreeMapAVLRBTest {
 	assertEquals(TreeMapAVLRB.ONE, x.root.right.deltaR);
 	assertEquals(TreeMapAVLRB.ONE, x.root.left.deltaR);
     }
+    
+    @Test
+    public void testInsertRightLeftRotation2() {
+	TreeMapAVLRB<Integer, Integer> x = new TreeMapAVLRB<>();
+	x.put(1921, 1921);
+	x.put(1801, 1801);
+	x.put(2130, 2130);
+	x.put(1918, 1918);
+	x.put(1870, 1870);
+
+	assertEquals(2, x.rotations);
+	assertEquals(1921, (int) x.root.value);
+	assertEquals(TreeMapAVLRB.TWO, x.root.right.deltaR);
+    }
 
 /*
           8
@@ -186,5 +200,20 @@ public class TreeMapAVLRBTest {
 	assertEquals(TreeMapAVLRB.TWO, x.root.right.deltaR);
 	assertEquals(TreeMapAVLRB.ONE, x.root.left.left.deltaR);
 	assertEquals(TreeMapAVLRB.ONE, x.root.left.deltaR);
+    }
+    
+    @Test
+    public void testInsertMany() {
+	TreeMapAVLRB<Integer, Integer> x = new TreeMapAVLRB<>();
+	Integer [] a = {477, 1193, 2130,398,1393,946,422,1381,1767,830,570,1085,741,598,1658,1801,487,1921,1918,258,135,975,1870};
+	for (int i=0; i < a.length; i++)
+	    x.put(a[i], a[i]);
+	assertEquals(1193, (int) x.root.value);
+	assertEquals(1767, (int) x.root.right.value);
+	assertEquals(1393, (int) x.root.right.left.value);
+	assertEquals(1921, (int) x.root.right.right.value);
+	assertEquals(1870, (int) x.root.right.right.left.value);
+	assertEquals(1801, (int) x.root.right.right.left.left.value);
+	assertEquals(2130, (int) x.root.right.right.right.value);
     }
 }
