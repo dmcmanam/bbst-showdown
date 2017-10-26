@@ -10,8 +10,6 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.Spliterator;
 
-import bbst_showdown.TreeMapAVLRB.Entry;
-
 
 /**
  * An AVL tree implementation.
@@ -1142,57 +1140,4 @@ public class TreeMapAVL<K, V> extends AbstractMap<K, V> {
     public K higherKey(K key) {
 	return keyOrNull(getHigherEntry(key));
     }
-    
-    public void printSubtree(int indent, Entry<K, V> x) {
-	  for( int i = 0; i < indent; ++i) {
-	    System.out.print(" ");
-	  }
-
-	  if(x.left != null || x.right != null) {
-	    System.out.println("(" + x.value);     
-	    if (x.left != null)
-		printSubtree(indent + 12, x.left); //this is a recursive call, alternatively use the indent formula above if you don't use recursion
-	    if (x.right != null)
-		printSubtree(indent + 12, x.right);
-
-	    //we have a new line so print the indent again
-	    for( int i = 0; i < indent; ++i) {
-	      System.out.print(" ");
-	    }
-	    System.out.println(")"); 
-	  } else if(x.value != null) {
-	    System.out.println(x.value);
-	  } else { //empty/non existing node
-	    System.out.println("()");
-	  }
-	}
-  
-  public static void main(String[] agrs) {
-	String fileName = "randomInts.txt";
-	java.io.File file = new java.io.File(fileName);
-
-	try {
-	    java.util.Scanner inputStream = new java.util.Scanner(file);
-	    while (inputStream.hasNext()) {
-		String data = inputStream.next();
-		String[] values = data.split(",");
-		Integer[] v = new Integer[1000000];
-		for (int i = 0; i < 1000000; i++) {
-		    v[i] = Integer.parseInt(values[i]);
-		}
-		TreeMapAVL<Integer, Integer> x = new TreeMapAVL<Integer, Integer>();
-		long start = System.currentTimeMillis();
-		for (int i = 0; i < 24; i++) {
-		    x.put(v[i], v[i]);
-		}
-		long stop = System.currentTimeMillis();
-		x.printSubtree(0, x.root);
-		
-		System.out.println("Time red-black:" + (stop - start) + " rotations:" + x.rotations() + " height:" + x.treeHeight());
-	    }
-	    inputStream.close();
-	} catch (java.io.FileNotFoundException e) {
-	    e.printStackTrace();
-	}
-   }
 }
