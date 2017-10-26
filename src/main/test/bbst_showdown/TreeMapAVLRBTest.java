@@ -2,13 +2,19 @@ package bbst_showdown;
 
 import static org.junit.Assert.*;
 
+import org.junit.Before;
 import org.junit.Test;
 
 public class TreeMapAVLRBTest {
-
+    TreeMapAVLRB<Integer, Integer> x = new TreeMapAVLRB<>();
+    
+    @Before
+    public void setup(){
+	x.clear();
+    }
+    
     @Test
     public void testTreeHeight() {
-	TreeMapAVLRB<Integer, Integer> x = new TreeMapAVLRB<>();
 	x.put(2, 2);
 	assertEquals(0, x.treeHeight());
 	x.put(3, 3);
@@ -20,7 +26,6 @@ public class TreeMapAVLRBTest {
     
     @Test
     public void testInsertDoNothing() {
-	TreeMapAVLRB<Integer, Integer> x = new TreeMapAVLRB<>();
 	x.put(2, 2);
 	x.put(3, 3);
 	assertEquals(0, x.rotations);
@@ -35,7 +40,6 @@ public class TreeMapAVLRBTest {
     
     @Test
     public void testInsert100() {
-	TreeMapAVLRB<Integer, Integer> x = new TreeMapAVLRB<>();
 	for (int i=0; i < 100; i++)
 	    x.put(i, i);
 	assertEquals(100, x.size());
@@ -44,7 +48,6 @@ public class TreeMapAVLRBTest {
     
     @Test
     public void testInsert6() {
-        TreeMapAVLRB<Integer, Integer> x = new TreeMapAVLRB<>();
         for (int i=0; i<6; i++) 
             x.put(i, i);
         assertEquals(3, x.rotations);
@@ -54,7 +57,6 @@ public class TreeMapAVLRBTest {
 
     @Test
     public void testInsertOneLeftRotation() {
-	TreeMapAVLRB<Integer, Integer> x = new TreeMapAVLRB<>();
 	x.put(1, 1);
 	x.put(2, 2);
 	x.put(3, 3);
@@ -77,7 +79,6 @@ public class TreeMapAVLRBTest {
 */
     @Test
     public void testInsertTwoLeftRotations() {
-	TreeMapAVLRB<Integer, Integer> x = new TreeMapAVLRB<>();
 	x.put(1, 1);
 	x.put(2, 2);
 	x.put(3, 3);
@@ -104,7 +105,6 @@ public class TreeMapAVLRBTest {
      */
     @Test
     public void testInsertThreeLeftRotations() {
-	TreeMapAVLRB<Integer, Integer> x = new TreeMapAVLRB<>();
 	x.put(1, 1);
 	x.put(2, 2);
 	x.put(3, 3);
@@ -125,7 +125,6 @@ public class TreeMapAVLRBTest {
 
     @Test
     public void testInsertLeftRightRotation() {
-	TreeMapAVLRB<Integer, Integer> x = new TreeMapAVLRB<>();
 	x.put(3, 3);
 	x.put(1, 1);
 	x.put(2, 2);
@@ -138,7 +137,6 @@ public class TreeMapAVLRBTest {
 
     @Test
     public void testInsertRightLeftRotation() {
-	TreeMapAVLRB<Integer, Integer> x = new TreeMapAVLRB<>();
 	x.put(3, 3);
 	x.put(6, 6);
 	x.put(4, 4);
@@ -151,7 +149,6 @@ public class TreeMapAVLRBTest {
     
     @Test
     public void testInsertRightLeftRotation2() {
-	TreeMapAVLRB<Integer, Integer> x = new TreeMapAVLRB<>();
 	x.put(1921, 1921);
 	x.put(1801, 1801);
 	x.put(2130, 2130);
@@ -173,13 +170,15 @@ public class TreeMapAVLRBTest {
  */
     @Test
     public void testInsertBuildFibonacciTree() {
-	TreeMapAVLRB<Integer, Integer> x = new TreeMapAVLRB<>();
 	x.put(8, 8);
-	x.put(5, 5); x.put(11, 11);
+	x.put(5, 5); x.put(11, 11); 
 	// 3,7,10,12
 	x.put(3, 3); x.put(7, 7); x.put(10, 10); x.put(12, 12);
 	// 2,4,6,9
-	x.put(2, 2); x.put(4, 4); x.put(6, 6); x.put(9, 9);
+	x.put(2, 2); assertEquals(0, x.rotations);
+	x.put(4, 4); assertEquals(0, x.rotations);
+	x.put(6, 6); assertEquals(0, x.rotations);
+	x.put(9, 9); assertEquals(0, x.rotations);
 	x.put(1, 1);
 	System.out.println("Rotations: " + x.rotations);
 	assertEquals(0, x.rotations);
@@ -187,8 +186,33 @@ public class TreeMapAVLRBTest {
     }
     
     @Test
+    public void testInsertMaintainDelta2Parent() {
+	x.put(20, 20);
+	x.put(10, 10); x.put(40, 40);
+	x.put(5, 5); x.put(15, 15); x.put(30, 30); x.put(80, 80);
+	x.put(0, 0); x.put(7, 7); x.put(12, 12); x.put(60, 60); x.put(160, 160);
+	x.put(8, 8);
+	assertEquals(TreeMapAVLRB.TWO, x.root.right.deltaR);
+	x.put(100, 100);
+	assertEquals(TreeMapAVLRB.TWO, x.root.right.deltaR);
+    }
+    
+    @Test
+    public void testInsertRemoveDelta2Child() {
+	x.put(1767, 1767);
+	x.put(1658, 1658);
+	x.put(1921, 1921);
+	x.put(1801, 1801);
+	x.put(2130, 2130); // temporary delta 2 removed by rotations when insert 1918
+	System.out.println("Inserting 1918");
+	x.put(1918, 1918);
+	
+	assertEquals(1801, (int) x.root.value);
+	assertEquals(TreeMapAVLRB.ONE, x.root.right.right.deltaR);
+    }
+    
+    @Test
     public void testInsertTwoRightRotations() {
-	TreeMapAVLRB<Integer, Integer> x = new TreeMapAVLRB<>();
 	x.put(5, 5);
 	x.put(4, 4);
 	x.put(3, 3);
@@ -204,16 +228,15 @@ public class TreeMapAVLRBTest {
     
     @Test
     public void testInsertMany() {
-	TreeMapAVLRB<Integer, Integer> x = new TreeMapAVLRB<>();
-	Integer [] a = {477, 1193, 2130,398,1393,946,422,1381,1767,830,570,1085,741,598,1658,1801,487,1921,1918,258,135,975,1870};
-	for (int i=0; i < a.length; i++)
+	TreeMapAVL<Integer, Integer> y = new TreeMapAVL<>();
+	Integer [] a = {1493,477,1193,2130,398,1393,946,422,1381,1767,830,570,1085,741,598,1658,1801,487,1921,1918,258,135,975,1870};
+	for (int i=0; i < a.length; i++) {
+	    System.out.println("INSERT:" + i +"=" + a[i]);
 	    x.put(a[i], a[i]);
+	    y.put(a[i], a[i]);
+	    assertTrue(x.identicalTrees(x.root, y.root));
+	}
 	assertEquals(1193, (int) x.root.value);
-	assertEquals(1767, (int) x.root.right.value);
-	assertEquals(1393, (int) x.root.right.left.value);
-	assertEquals(1921, (int) x.root.right.right.value);
-	assertEquals(1870, (int) x.root.right.right.left.value);
-	assertEquals(1801, (int) x.root.right.right.left.left.value);
-	assertEquals(2130, (int) x.root.right.right.right.value);
+	
     }
 }
