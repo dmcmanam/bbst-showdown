@@ -350,14 +350,12 @@ public class TreeMapWAVL<K, V> extends AbstractMap<K, V> {
     }
     
     /**
-If the path of incremented ranks reaches the root of the tree, then the rebalancing procedure stops, 
-	without changing the structure of the tree.
+If the path of incremented ranks reaches the root of the tree, then the rebalancing procedure stops.
 If the path of incremented ranks reaches a node whose parent's rank previously differed by two, 
-	and (after incrementing the rank of the node) still differs by one, then again the rebalancing procedure stops without changing 
-	the structure of the tree.
+the rebalancing procedure stops without changing the structure of the tree after incrementing the child's rank.
 If the procedure increases the rank of a node x, so that it becomes equal to the rank of the parent y of x, 
-	but the other child of y has a rank that is smaller by two (so that the rank of y cannot be increased) 
-	then again the rebalancing procedure stops after performing rotations necessary.
+  but the other child of y has a rank that is smaller by two (so that the rank of y cannot be increased) 
+  then again the rebalancing procedure stops after performing rotations necessary.
      */
     private void fixAfterInsertion(Entry<K, V> x) {
 	x.rank++;
@@ -397,7 +395,7 @@ If the procedure increases the rank of a node x, so that it becomes equal to the
 	    if (p.rank == 1)
 		return true;
 	    return false;
-	} else if (p.rank - p.left.rank == 2)
+	} else if (p.left.rank + 2 == p.rank)
 	    return true;
 	return false;
     }
