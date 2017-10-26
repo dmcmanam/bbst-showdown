@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.util.*;
 
 import bbst_showdown.TreeMapAVL;
+import bbst_showdown.TreeMapAVLRB;
 import bbst_showdown.TreeMapAVLRec;
 import bbst_showdown.TreeMapAVLStack;
 import bbst_showdown.TreeMapBST;
@@ -19,29 +20,29 @@ public class Standoff {
 
     public static void main(String[] args) throws FileNotFoundException {
 	Map<Integer, Integer> redBlack = new TreeMapRedBlack<>();
-	TreeMapAVL<Integer, Integer> avl = new TreeMapAVL<>();
-	TreeMapWAVL<Integer, Integer> wavl = new TreeMapWAVL<>();
-	TreeMapAVLStack<Integer, Integer> avlNoParent = new TreeMapAVLStack<>();
-	TreeMapBST<Integer, Integer> bst = new TreeMapBST<>();
-	TreeMapAVLRec<Integer, Integer> avlRec = new TreeMapAVLRec<>();
+	Map<Integer, Integer> avl = new TreeMapAVL<>();
+	Map<Integer, Integer> avlRB = new TreeMapAVLRB<>();
+	Map<Integer, Integer> wavl = new TreeMapWAVL<>();
+	Map<Integer, Integer> avlNoParent = new TreeMapAVLStack<>();
+	Map<Integer, Integer> bst = new TreeMapBST<>();
+	Map<Integer, Integer> avlRec = new TreeMapAVLRec<>();
 
 	List<Map<Integer, Integer>> maps = new ArrayList<Map<Integer, Integer>>();
 	maps.add(redBlack); // 0=red-black
 	maps.add(avl);      // 1=avl
-	maps.add(wavl);	    // 2=wavl
+	maps.add(avlRB);	    // 2=avl rank balanced
+	maps.add(wavl);	    // 3=wavl
 	
 	// TODO update the integer to choose a different tree implementation
-	Map<Integer, Integer> treeMap = maps.get(1);
+	Map<Integer, Integer> treeMap = maps.get(0);
 	
-	System.out.println("Results for inserting 1 million random integers: ");
+	int mean;
+	mean = insertInOrder(treeMap, 500000);
+	System.out.println("Sequential insert time: " + mean + "ms, " + treeMap);
 
 	Integer [] randomInts = readRandomInts();
-	Integer mean = insert(treeMap, randomInts);
-	System.out.println("  Mean insertion time: " + mean + "ms, " + treeMap);
-	
-	System.out.println("Results for inserting 1 million sequential integers: ");
-	mean = insertInOrder(treeMap, 1000000);
-	System.out.println("  Mean insertion time: " + mean + "ms, " + treeMap);
+	mean = insert(treeMap, randomInts, 500000);
+	System.out.println("Random insert time: " + mean + "ms, " + treeMap);
     }
 
     private static Integer[] readRandomInts() throws FileNotFoundException {
@@ -75,17 +76,23 @@ public class Standoff {
 	return (int) (stop - start);
     }
 
-    private static int insert(Map<Integer, Integer> tree, Integer[] rands) {
-	long start = System.currentTimeMillis();
-	for (int run = 0; run < 1; run++) {
-	    tree.clear();
-	    for (int i = 0; i < rands.length; i++) {
-		tree.put(rands[i], rands[i]);
+    private static int insert(Map<Integer, Integer> tree, Integer[] rands, int elementsToInsert) {
+	int [] times = new int[7];
+	for (int j = 0; j < 7; j++) {
+	    long start = System.currentTimeMillis();
+	    for (int run = 0; run < 1; run++) {
+		tree.clear();
+		for (int i = 0; i < elementsToInsert; i++) {
+		    tree.put(rands[i], rands[i]);
+		}
 	    }
+	    long stop = System.currentTimeMillis();
+	    times[j] = (int) (stop-start);
 	}
-	long stop = System.currentTimeMillis();
-
-	return (int) (stop - start) / 1;
+	
+	Arrays.sort(times);
+	
+	return (times[2] + times[3] + times[4]) / 3;
     }
 
     public static long insertDeleteLookup(Map<Integer, Integer> x) {

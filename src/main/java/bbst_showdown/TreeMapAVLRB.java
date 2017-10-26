@@ -338,8 +338,10 @@ public class TreeMapAVLRB<K, V> extends AbstractMap<K, V> {
 	}
 
 	if (sibling == null) {
-	    System.out.println("INSERTING:" + e);
-	    fixAfterInsertion(parent);
+	    if (parent.deltaR == TWO)
+		parent.deltaR = ONE;
+	    else
+		fixAfterInsertion(parent);
 	}
 
 	size++;
@@ -348,61 +350,70 @@ public class TreeMapAVLRB<K, V> extends AbstractMap<K, V> {
     }
     
     /**
-If the path of incremented ranks reaches the root of the tree, then the rebalancing procedure stops, 
-	without changing the structure of the tree.
+If the path of incremented ranks reaches the root of the tree, then the rebalancing procedure stops.
 If the path of incremented ranks reaches a node whose parent's rank previously differed by two, 
-	and (after incrementing the rank of the node) still differs by one, then again the rebalancing procedure stops without changing 
-	the structure of the tree.
+ the rebalancing procedure stops without changing the structure of the tree.
 If the procedure increases the rank of a node x, so that it becomes equal to the rank of the parent y of x, 
 	but the other child of y has a rank that is smaller by two (so that the rank of y cannot be increased) 
 	then again the rebalancing procedure stops after performing rotations necessary.
      */
     private void fixAfterInsertion(Entry<K, V> x) {
-	 System.out.println("Fixing: " + x);
-	while (x.parent != null) { // && (x.parent.rank - x.rank) != 1
-	    System.out.println("Checking: " + x);
-	    if (x.deltaR == TWO) {
-		x.deltaR = ONE;
-		break;
-	    }
-	    
+	while (x.parent != null) { 
 	    Entry<K, V> p = x.parent;
 	    if (p.left == x) { // node was added on left so check if left side is unbalanced
 		Entry<K, V> sibling = p.right;
 		if (sibling == null || sibling.deltaR == TWO) { // need to rebalance
-		    System.out.println("ROTATING:" + sibling);
 		    if (sibling != null)
 			sibling.deltaR = ONE;
+		    //if (x.left != null) x.left.deltaR = ONE;
+		    if (x.right != null) {
+			 if(x.right.deltaR == ONE) {
+			     if (x.left != null) x.left.deltaR = ONE;
+			     rotateLeft(x);
+			 } else
+			     x.right.deltaR = ONE;
+		    } 
 		    
-		    if (x.right != null && x.right.deltaR == ONE) {
-			rotateLeft(x);
-		    } else if (x.right != null)
-			x.right.deltaR = ONE;
+		    if (p.deltaR == TWO) {  // maintain delta 2 at parent
+			p.deltaR = ONE;
+			p.left.deltaR = TWO;
+		    }
 		    rotateRight(p);
 		    break;
 		} else if (sibling.deltaR == ONE) {
 		    sibling.deltaR = TWO;
-		}
-	    } else {
+		} 
+	    } else { // checking right side heavy
 		Entry<K, V> sibling = p.left;
 		if (sibling == null || sibling.deltaR == TWO) { // need to rebalance
-		    System.out.println("ROTATING 2");
 		    if (sibling != null)
 			sibling.deltaR = ONE;
+		    //if (x.right != null) x.right.deltaR = ONE;
 		    
-		    if (x.left != null && x.left.deltaR == ONE) {
-			rotateRight(x);
-		    } else if (x.left != null)
-			x.left.deltaR = ONE;
+		    if (x.left != null) {
+			if (x.left.deltaR == ONE) {
+			    if (x.right != null) x.right.deltaR = ONE;
+			    rotateRight(x);
+			} else
+			    x.left.deltaR = ONE;
+		    }
+		    
+		    if (p.deltaR == TWO) {  // maintain delta 2 at parent
+			p.deltaR = ONE;
+			p.right.deltaR = TWO;
+		    }
 		    rotateLeft(p);
 		    break;
 		} else if (sibling.deltaR == ONE) {
-		    if ((int) x.value == 2130768989)
-			System.out.println("HERE");
 		    sibling.deltaR = TWO;
-		}
+		} 
 	    }
-
+	    
+	    if (p.deltaR == TWO) {
+		p.deltaR = ONE;
+		break;
+	    }
+	    
 	    x = x.parent;
 	}
     }
@@ -532,9 +543,8 @@ If the procedure increases the rank of a node x, so that it becomes equal to the
         }
     }
     
-    //mirror node is a term from Knuth's Art of CP, it refers to the parent node's other child.
     private void fixAfterDeletion(Entry<K, V> p, Entry<K,V> mirror) {
-	
+	throw new RuntimeException();
     }
     
     /**
@@ -657,57 +667,17 @@ If the procedure increases the rank of a node x, so that it becomes equal to the
 	System.out.println(x.value + ", " + x.deltaR);
 	inOrderTraversal(x.right);
     }
-    public void printSubtree(int indent, Entry<K, V> x) {
-	  for( int i = 0; i < indent; ++i) {
-	    System.out.print(" ");
-	  }
-
-	  if(x.left != null || x.right != null) {
-	    System.out.println("(" + x.value);     
-	    if (x.left != null)
-		printSubtree(indent + 12, x.left); //this is a recursive call, alternatively use the indent formula above if you don't use recursion
-	    if (x.right != null)
-		printSubtree(indent + 12, x.right);
-
-	    //we have a new line so print the indent again
-	    for( int i = 0; i < indent; ++i) {
-	      System.out.print(" ");
-	    }
-	    System.out.println(")"); 
-	  } else if(x.value != null) {
-	    System.out.println(x.value);
-	  } else { //empty/non existing node
-	    System.out.println("()");
-	  }
-	}
     
-    public static void main(String[] agrs) {
- 	String fileName = "randomInts.txt";
- 	java.io.File file = new java.io.File(fileName);
+    public boolean identicalTrees(Entry<K, V> a, TreeMapAVL.Entry<K, V> b) {
+	/* 1. both empty */
+	if (a == null && b == null)
+	    return true;
 
- 	try {
- 	    java.util.Scanner inputStream = new java.util.Scanner(file);
- 	    while (inputStream.hasNext()) {
- 		String data = inputStream.next();
- 		String[] values = data.split(",");
- 		Integer[] v = new Integer[1000000];
- 		for (int i = 0; i < 1000000; i++) {
- 		    v[i] = Integer.parseInt(values[i]);
- 		}
- 		TreeMapAVLRB<Integer, Integer> x = new TreeMapAVLRB<Integer, Integer>();
- 		long start = System.currentTimeMillis();
- 		for (int i = 0; i < 23; i++) {
- 		    x.put(v[i], v[i]);
- 		}
- 		long stop = System.currentTimeMillis();
- 		x.printSubtree(0, x.root);
- 		
- 		System.out.println("Time red-black:" + (stop - start) + " rotations:" + x.rotations() + " height:" + x.treeHeight());
- 	    }
- 	    inputStream.close();
- 	} catch (java.io.FileNotFoundException e) {
- 	    e.printStackTrace();
- 	}
-     }
+	/* 2. both non-empty -> compare them */
+	if (a != null && b != null)
+	    return (a.value == b.value && identicalTrees(a.left, b.left) && identicalTrees(a.right, b.right));
 
+	/* 3. one empty, one not -> false */
+	return false;
+    }
 }

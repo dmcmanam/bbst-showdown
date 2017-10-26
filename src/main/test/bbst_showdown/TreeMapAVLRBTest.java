@@ -1,6 +1,7 @@
 package bbst_showdown;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -110,7 +111,8 @@ public class TreeMapAVLRBTest {
 	x.put(3, 3);
 	x.put(4, 4);
 	x.put(5, 5);
-	
+	assertEquals(5, (int) x.root.right.right.value);
+	System.out.println("Inserting 6");
 	assertEquals(TreeMapAVLRB.TWO, x.root.left.deltaR);
 	x.put(6, 6);
 
@@ -228,13 +230,12 @@ public class TreeMapAVLRBTest {
     
     @Test
     public void testInsertMany() {
-	TreeMapAVL<Integer, Integer> y = new TreeMapAVL<>();
-	Integer [] a = {1493,477,1193,2130,398,1393,946,422,1381,1767,830,570,1085,741,598,1658,1801,487,1921,1918,258,135,975,1870};
+	Integer [] a = {1493,477,1193,2130,398,1393,946,422,1381,1767,830,570,1085,741,598,1658,1801,487,1921,
+		1918,258,135,975,1870,1655,1585,1935,271,1969,1313,1290,162,1485,26,86,244,1140};
 	for (int i=0; i < a.length; i++) {
 	    System.out.println("INSERT:" + i +"=" + a[i]);
 	    x.put(a[i], a[i]);
-	    y.put(a[i], a[i]);
-	    assertTrue(x.identicalTrees(x.root, y.root));
+	    //assertTrue(x.identicalTrees(x.root, y.root));
 	}
 	assertEquals(1193, (int) x.root.value);
 	
