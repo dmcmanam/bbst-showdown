@@ -337,12 +337,8 @@ public class TreeMapAVLRB<K, V> extends AbstractMap<K, V> {
 	    sibling = parent.left;
 	}
 
-	if (sibling == null) {
-	    if (parent.deltaR == TWO)
-		parent.deltaR = ONE;
-	    else
-		fixAfterInsertion(parent);
-	}
+	if (sibling == null)
+	    fixAfterInsertion(parent);
 
 	size++;
 	modCount++;
@@ -351,21 +347,20 @@ public class TreeMapAVLRB<K, V> extends AbstractMap<K, V> {
     
     /**
 If the path of incremented ranks reaches the root of the tree, then the rebalancing procedure stops.
-If the path of incremented ranks reaches a node whose parent's rank previously differed by two, 
- the rebalancing procedure stops without changing the structure of the tree.
+If the path of incremented ranks reaches a node whose parent's rank previously differed by two, the rebalancing procedure stops.
 If the procedure increases the rank of a node x, so that it becomes equal to the rank of the parent y of x, 
 	but the other child of y has a rank that is smaller by two (so that the rank of y cannot be increased) 
 	then again the rebalancing procedure stops after performing rotations necessary.
      */
     private void fixAfterInsertion(Entry<K, V> x) {
-	while (x.parent != null) { 
+	while (x.deltaR != TWO && x.parent != null) { 
 	    Entry<K, V> p = x.parent;
 	    if (p.left == x) { // node was added on left so check if left side is unbalanced
 		Entry<K, V> sibling = p.right;
 		if (sibling == null || sibling.deltaR == TWO) { // need to rebalance
 		    if (sibling != null)
 			sibling.deltaR = ONE;
-		    //if (x.left != null) x.left.deltaR = ONE;
+		    
 		    if (x.right != null) {
 			 if(x.right.deltaR == ONE) {
 			     if (x.left != null) x.left.deltaR = ONE;
@@ -379,7 +374,7 @@ If the procedure increases the rank of a node x, so that it becomes equal to the
 			p.left.deltaR = TWO;
 		    }
 		    rotateRight(p);
-		    break;
+		    return;
 		} else if (sibling.deltaR == ONE) {
 		    sibling.deltaR = TWO;
 		} 
@@ -388,7 +383,6 @@ If the procedure increases the rank of a node x, so that it becomes equal to the
 		if (sibling == null || sibling.deltaR == TWO) { // need to rebalance
 		    if (sibling != null)
 			sibling.deltaR = ONE;
-		    //if (x.right != null) x.right.deltaR = ONE;
 		    
 		    if (x.left != null) {
 			if (x.left.deltaR == ONE) {
@@ -403,19 +397,16 @@ If the procedure increases the rank of a node x, so that it becomes equal to the
 			p.right.deltaR = TWO;
 		    }
 		    rotateLeft(p);
-		    break;
+		    return;
 		} else if (sibling.deltaR == ONE) {
 		    sibling.deltaR = TWO;
 		} 
 	    }
 	    
-	    if (p.deltaR == TWO) {
-		p.deltaR = ONE;
-		break;
-	    }
-	    
 	    x = x.parent;
 	}
+	if (x.deltaR == TWO)
+	    x.deltaR=ONE;
     }
 
     
