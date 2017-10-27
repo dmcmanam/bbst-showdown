@@ -34,15 +34,15 @@ public class Standoff {
 	maps.add(wavl);	    // 3=wavl
 	
 	// TODO update the integer to choose a different tree implementation
-	Map<Integer, Integer> treeMap = maps.get(0);
+	Map<Integer, Integer> treeMap = maps.get(1);
 	
 	int mean;
-	mean = insertInOrder(treeMap, 500000);
-	System.out.println("Sequential insert time: " + mean + "ms, " + treeMap);
-
 	Integer [] randomInts = readRandomInts();
-	mean = insert(treeMap, randomInts, 500000);
+	mean = insert(treeMap, randomInts, 400000);
 	System.out.println("Random insert time: " + mean + "ms, " + treeMap);
+	
+	mean = insertInOrder(treeMap, 400000);
+	System.out.println("Sequential insert time: " + mean + "ms, " + treeMap);
     }
 
     private static Integer[] readRandomInts() throws FileNotFoundException {
@@ -65,20 +65,26 @@ public class Standoff {
 
     }
     
-    private static int insertInOrder(Map<Integer, Integer> tree, int elements) {
-	long start = System.currentTimeMillis();
-	tree.clear();
-	for (Integer i=0; i < elements; i++) {
-	    tree.put(i,i);
+    private static int insertInOrder(Map<Integer, Integer> tree, int nElements) {
+	int[] times = new int[5];
+	for (int j = 0; j < 5; j++) {
+	    long start = System.currentTimeMillis();
+	    tree.clear();
+	    for (Integer i = 0; i < nElements; i++) {
+		tree.put(i, i);
+	    }
+	    long stop = System.currentTimeMillis();
+	    times[j] = (int) (stop - start);
 	}
-	long stop = System.currentTimeMillis();
 
-	return (int) (stop - start);
+	Arrays.sort(times);
+
+	return (times[1] + times[2] + times[3]) / 3;
     }
 
     private static int insert(Map<Integer, Integer> tree, Integer[] rands, int elementsToInsert) {
-	int [] times = new int[7];
-	for (int j = 0; j < 7; j++) {
+	int [] times = new int[5];
+	for (int j = 0; j < 5; j++) {
 	    long start = System.currentTimeMillis();
 	    for (int run = 0; run < 1; run++) {
 		tree.clear();
@@ -92,7 +98,7 @@ public class Standoff {
 	
 	Arrays.sort(times);
 	
-	return (times[2] + times[3] + times[4]) / 3;
+	return (times[1] + times[2] + times[3]) / 3;
     }
 
     public static long insertDeleteLookup(Map<Integer, Integer> x) {
