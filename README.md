@@ -7,12 +7,15 @@ nearly identical for random insertions.  If you are still using red-black trees 
 Consider these two tables:
 
 400,000 Random Inserts (times in ms)
+
 | Tree Type  | Run 1 | Run 2 | Run 3 |
 | --- | ---: | ---:| ---:|
 | AVL  | 395ms  | 393ms | 391ms |
 | Red-black  | 389ms  | 392ms | 398ms |
 
+
 400,000 Sequential Inserts (times in ms)
+
 | Tree Type  | Run 1 | Run 2 | Run 3 |
 | --- | ---: | ---:| ---:|
 | AVL  | 84ms  | 83ms | 88ms |
