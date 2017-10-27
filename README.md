@@ -1,27 +1,30 @@
 # bbst-showdown
 Performance of WAVL, AVL &amp; Red-black trees compared in Java.
 
-Because AVL trees enforce stricter balance requirements than red-black trees, performance of AVL trees is better than red-black in situations where 
-red-black trees become unbalanced such as inserting 1 million elements in-order.
+Because AVL trees enforce stricter balance requirements than red-black trees, performance of AVL trees is substantially better when sequential elements are inserted and
+nearly identical for random insertions.  If you are still using red-black trees and performance is important it is time to consider alternatives.
+
+Consider these two tables:
+
+400,000 Random Inserts (times in ms)
+| Tree Type  | Run 1 | Run 2 | Run 3 |
+| --- | ---: | ---:| ---:|
+| AVL  | 395ms  | 393ms | 391ms |
+| Red-black  | 389ms  | 392ms | 398ms |
+
+400,000 Sequential Inserts (times in ms)
+| Tree Type  | Run 1 | Run 2 | Run 3 |
+| --- | ---: | ---:| ---:|
+| AVL  | 84ms  | 83ms | 88ms |
+| Red-black  | 113ms  | 127ms | 125ms |
 
 There are excellent resources for AVL trees in the c language.  Two of them are:
 https://benpfaff.org/papers/libavl.pdf
 http://www.eternallyconfuzzled.com/tuts/datastructures/jsw_tut_avl.aspx
 
-However, I have been unable to find a variety of AVL tree implementations in Java.
-Specifically, most Java implementations use height and recursion, arguably the most elegant; 
-however, I wanted to implement a faster version with parent pointers, balance factors and no recursion.
-
-Comparing in-order insertions with OpenJDK’s JDK 1.8 TreeMap and this AVL implementation with parent pointers, the difference is notable:
-
-| Tree Type  | 100,000 inserts | 1,000,000 inserts |
-| --- | ---: | ---:|
-| AVL  | 36ms  | 192ms |
-| Red-black  | 54ms  | 323ms |
-
 Balanced binary trees such as red-black, AVL and WAVL can have a reputation for being difficult to code, 
-when each tree transformation necessary for insert and delete is
-drawn out then it becomes clear that the code will be quick to implement.
+that may have been the case in the 90s when coding them from a textbook or a research paper but with modern tools and resources the difficulty has decreased.
+Take a look at the fixAfterInsert() method for TreeMapWAVL which uses rank and rank difference to build an AVL tree for an example of a fairly simple insert retracing loop.
 
 ## The AVL vs. Red-black Tree History
 
