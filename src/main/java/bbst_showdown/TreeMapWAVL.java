@@ -360,32 +360,30 @@ If the procedure increases the rank of a node x, so that it becomes equal to the
      */
     private void fixAfterInsertion(Entry<K, V> x) {
 	while (x.parent != null && x.rank + 1 != x.parent.rank) {
-	    Entry<K, V> p = x.parent;
-	    if (p.left == x) { // parent's left node == this so node was added on the left
-		if (needToRotateRight(p)) {
-		    if (x.right != null && (x.rank - x.right.rank) == 1) {
-			x.rank--;
-			x.right.rank++;
+	    Entry<K, V> parent = x.parent;
+	    if (parent.left == x) { // new node was added on the left
+		if (needToRotateRight(parent)) {
+		    if (x.right != null && x.rank == x.right.rank + 1) {
+			x.rank--; x.right.rank++;
 			rotateLeft(x);
 		    }
-		    p.rank--;
-		    rotateRight(p);
+		    parent.rank--;
+		    rotateRight(parent);
 		    break;
 		}
 	    } else {
-		if (needToRotateLeft(p)) {
-		    if (x.left != null && (x.rank - x.left.rank) == 1) {
-			x.rank--;
-			x.left.rank++;
+		if (needToRotateLeft(parent)) {
+		    if (x.left != null && x.rank == x.left.rank + 1) {
+			x.rank--; x.left.rank++;
 			rotateRight(x);
 		    }
-		    p.rank--;
-		    rotateLeft(p);
+		    parent.rank--;
+		    rotateLeft(parent);
 		    break;
 		}
 	    }
 
-	    x = x.parent;
+	    x = parent;
 	    x.rank++;
 	}
     }
