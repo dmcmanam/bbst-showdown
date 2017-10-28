@@ -333,6 +333,7 @@ public class TreeMapWAVL<K, V> extends AbstractMap<K, V> {
 	}
 
 	if (parent.rank == 0) {
+	    parent.rank++;
 	    fixAfterInsertion(parent);
 	}
 
@@ -358,11 +359,10 @@ If the procedure increases the rank of a node x, so that it becomes equal to the
   then again the rebalancing procedure stops after performing rotations necessary.
      */
     private void fixAfterInsertion(Entry<K, V> x) {
-	x.rank++;
 	while (x.parent != null && x.rank + 1 != x.parent.rank) {
 	    Entry<K, V> p = x.parent;
-	    if (p.left == x) { // parent's left node = this so check the left side
-		if (needToRotateLeftHeavy(p)) {
+	    if (p.left == x) { // parent's left node == this so node was added on the left
+		if (needToRotateRight(p)) {
 		    if (x.right != null && (x.rank - x.right.rank) == 1) {
 			x.rank--;
 			x.right.rank++;
@@ -373,7 +373,7 @@ If the procedure increases the rank of a node x, so that it becomes equal to the
 		    break;
 		}
 	    } else {
-		if (needToRotateRightHeavy(p)) {
+		if (needToRotateLeft(p)) {
 		    if (x.left != null && (x.rank - x.left.rank) == 1) {
 			x.rank--;
 			x.left.rank++;
@@ -390,22 +390,24 @@ If the procedure increases the rank of a node x, so that it becomes equal to the
 	}
     }
 
-    private boolean needToRotateRightHeavy(Entry<K, V> p) {
-	if (p.left == null) {
+    // check if sibling node has a rank difference of 2
+    private boolean needToRotateLeft(Entry<K, V> p) {
+	if (p.left == null) { // rank of sibling is -1
 	    if (p.rank == 1)
 		return true;
 	    return false;
-	} else if (p.left.rank + 2 == p.rank)
+	} else if (p.rank == p.left.rank + 2)
 	    return true;
 	return false;
     }
 
-    private boolean needToRotateLeftHeavy(Entry<K, V> p) {
-	if (p.right == null) {
+    // check if sibling node has a rank difference of 2
+    private boolean needToRotateRight(Entry<K, V> p) {
+	if (p.right == null) { // rank of sibling is -1
 	    if (p.rank == 1)
 		return true;
 	    return false;
-	} else if (p.rank - p.right.rank == 2)
+	} else if (p.rank == p.right.rank + 2)
 	    return true;
 	return false;
     }
