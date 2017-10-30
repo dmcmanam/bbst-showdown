@@ -1,10 +1,14 @@
 package bbst_showdown;
 
 import java.util.AbstractMap;
+import java.util.AbstractSet;
 import java.util.Comparator;
+import java.util.ConcurrentModificationException;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.Spliterator;
 
 
 /**
@@ -492,78 +496,77 @@ If the procedure increases the rank of a node x, so that it becomes equal to the
         if (replacement != null) {
             // Link replacement to parent
 	    replacement.parent = p.parent;
-	    Entry<K, V> mirror = null;
+	    Entry<K, V> sibling = null;
 	    if (p.parent == null) {
 		root = replacement;
 		return;
 	    } else if (p == p.parent.left) {
 		p.parent.left = replacement;
-		mirror = p.parent.right;
+		sibling = p.parent.right;
 	    } else {
 		p.parent.right = replacement;
-		mirror = p.parent.left;
+		sibling = p.parent.left;
 	    }
 
 	    // Null out links so they are OK to use by fixAfterDeletion.
 	    p.left = p.right = p.parent = null;
 
 	    // TODO
-	    if (mirror == null || (replacement.parent.rank - mirror.rank) != 1) {
-		fixAfterDeletion(replacement.parent, mirror);
+	    if (sibling == null || (replacement.parent.rank - sibling.rank) != 1) {
+		fixAfterDeletion(replacement.parent, sibling);
 	    }
         } else if (p.parent == null) { // return if we are the only node.
             root = null;
         } else { //  No children. Use self as phantom replacement and unlink.
             // TODO check if null check necessary?
             Entry<K, V> fixPoint = p.parent;
-            Entry<K, V> mirror = null;
+            Entry<K, V> sibling = null;
 
 	    if (p == p.parent.left) {
 		p.parent.left = null;
-		mirror = fixPoint.right;
+		sibling = fixPoint.right;
 	    } else if (p == p.parent.right) {
 		p.parent.right = null;
-		mirror = fixPoint.left;
+		sibling = fixPoint.left;
 	    }
 	    p.parent = null;
 
-	    if (mirror == null || (fixPoint.rank - p.rank >= 2) || (fixPoint.rank - mirror.rank) != 1 ) {
-		fixAfterDeletion(fixPoint, mirror);
+	    if (sibling == null || (fixPoint.rank - p.rank >= 2) || (fixPoint.rank - sibling.rank) != 1 ) {
+		fixAfterDeletion(fixPoint, sibling);
 	    }
         }
     }
     
-    //mirror node is a term from Knuth's Art of CP, it refers to the parent node's other child.
-    private void fixAfterDeletion(Entry<K, V> p, Entry<K,V> mirror) {
+    private void fixAfterDeletion(Entry<K, V> x, Entry<K,V> sibling) {
 	do {
-	    p.rank--;
-	    if (p.left == mirror) { // check if left heavy?
-		if (mirror != null && p.rank - mirror.rank <= 0) {
-		    if (mirror.right != null && (mirror.rank - mirror.right.rank) == 1) {
-			mirror.rank--;
-			mirror.right.rank++;
-			rotateLeft(mirror);
+	    x.rank--;
+	    if (x.left == sibling) { // delete was on right side, check if left too tall
+		if (sibling != null && x.rank - sibling.rank <= 0) {
+		    if (sibling.right != null && (sibling.rank - sibling.right.rank) == 1) {
+			sibling.rank--;
+			sibling.right.rank++;
+			rotateLeft(sibling);
 		    }
-		    p.rank--;
-		    rotateRight(p);
+		    x.rank--;
+		    rotateRight(x);
 		    break;
 		}
 	    } else {
-		if (mirror != null && p.rank - mirror.rank <= 0) {
-		    if (mirror.left != null && (mirror.rank - mirror.left.rank) == 1) {
-			mirror.rank--;
-			mirror.left.rank++;
-			rotateRight(mirror);
+		if (sibling != null && x.rank - sibling.rank <= 0) {
+		    if (sibling.left != null && (sibling.rank - sibling.left.rank) == 1) {
+			sibling.rank--;
+			sibling.left.rank++;
+			rotateRight(sibling);
 		    }
-		    p.rank--;
-		    rotateLeft(p);
+		    x.rank--;
+		    rotateLeft(x);
 		    break;
 		}
 	    }
 	    
-	    mirror = (p.parent == p.left) ? p.right : p.left;
-	    p = p.parent;
-	} while (p != null && (p.rank - mirror.rank) != 1);
+	    sibling = (x.parent == x.left) ? x.right : x.left;
+	    x = x.parent;
+	} while (x != null && sibling.rank + 1 != x.rank);
     }
     
     /**
@@ -673,9 +676,135 @@ If the procedure increases the rank of a node x, so that it becomes equal to the
         }
     }
 
-    @Override
-    public Set<java.util.Map.Entry<K, V>> entrySet() {
-	// TODO Auto-generated method stub
-	return null;
+    /**
+     * Returns a {@link Set} view of the mappings contained in this map.
+     *
+     * <p>
+     * The set's iterator returns the entries in ascending key order. The sets's
+     * spliterator is <em><a href="Spliterator.html#binding">late-binding</a></em>,
+     * <em>fail-fast</em>, and additionally reports {@link Spliterator#SORTED} and
+     * {@link Spliterator#ORDERED} with an encounter order that is ascending key
+     * order.
+     *
+     * <p>
+     * The set is backed by the map, so changes to the map are reflected in the set,
+     * and vice-versa. If the map is modified while an iteration over the set is in
+     * progress (except through the iterator's own {@code remove} operation, or
+     * through the {@code setValue} operation on a map entry returned by the
+     * iterator) the results of the iteration are undefined. The set supports
+     * element removal, which removes the corresponding mapping from the map, via
+     * the {@code Iterator.remove}, {@code Set.remove}, {@code removeAll},
+     * {@code retainAll} and {@code clear} operations. It does not support the
+     * {@code add} or {@code addAll} operations.
+     */
+    public Set<Map.Entry<K, V>> entrySet() {
+	EntrySet es = entrySet;
+	return (es != null) ? es : (entrySet = new EntrySet());
+    }
+
+    private transient EntrySet entrySet = null;
+
+    class EntrySet extends AbstractSet<Map.Entry<K, V>> {
+	public Iterator<Map.Entry<K, V>> iterator() {
+	    return new EntryIterator(getFirstEntry());
+	}
+
+	public boolean contains(Object o) {
+	    if (!(o instanceof Map.Entry))
+		return false;
+	    Map.Entry<?, ?> entry = (Map.Entry<?, ?>) o;
+	    Object value = entry.getValue();
+	    Entry<K, V> p = getEntry(entry.getKey());
+	    return p != null && valEquals(p.getValue(), value);
+	}
+
+	public boolean remove(Object o) {
+	    if (!(o instanceof Map.Entry))
+		return false;
+	    Map.Entry<?, ?> entry = (Map.Entry<?, ?>) o;
+	    Object value = entry.getValue();
+	    Entry<K, V> p = getEntry(entry.getKey());
+	    if (p != null && valEquals(p.getValue(), value)) {
+		deleteEntry(p);
+		return true;
+	    }
+	    return false;
+	}
+
+	public int size() {
+	    return TreeMapWAVL.this.size();
+	}
+
+	public void clear() {
+	    TreeMapWAVL.this.clear();
+	}
+
+	public Spliterator<Map.Entry<K, V>> spliterator() {
+	    return null;
+	}
+    }
+
+    /**
+     * Base class for TreeMap Iterators
+     */
+    abstract class PrivateEntryIterator<T> implements Iterator<T> {
+	Entry<K, V> next;
+	Entry<K, V> lastReturned;
+	int expectedModCount;
+
+	PrivateEntryIterator(Entry<K, V> first) {
+	    expectedModCount = modCount;
+	    lastReturned = null;
+	    next = first;
+	}
+
+	public final boolean hasNext() {
+	    return next != null;
+	}
+
+	final Entry<K, V> nextEntry() {
+	    Entry<K, V> e = next;
+	    if (e == null)
+		throw new NoSuchElementException();
+	    if (modCount != expectedModCount)
+		throw new ConcurrentModificationException();
+	    next = successor(e);
+	    lastReturned = e;
+	    return e;
+	}
+
+	final Entry<K, V> prevEntry() {
+	    Entry<K, V> e = next;
+	    if (e == null)
+		throw new NoSuchElementException();
+	    if (modCount != expectedModCount)
+		throw new ConcurrentModificationException();
+	    next = predecessor(e);
+	    lastReturned = e;
+	    return e;
+	}
+
+	public void remove() {
+	    if (lastReturned == null)
+		throw new IllegalStateException();
+	    if (modCount != expectedModCount)
+		throw new ConcurrentModificationException();
+	    // deleted entries are replaced by their successors
+	    if (lastReturned.left != null && lastReturned.right != null)
+		next = lastReturned;
+	    deleteEntry(lastReturned);
+	    expectedModCount = modCount;
+	    lastReturned = null;
+	}
+    }
+
+    final class EntryIterator extends PrivateEntryIterator<Map.Entry<K, V>> {
+	EntryIterator(Entry<K, V> first) {
+	    super(first);
+	}
+
+	public Map.Entry<K, V> next() {
+	    return nextEntry();
+	}
     }
 }
