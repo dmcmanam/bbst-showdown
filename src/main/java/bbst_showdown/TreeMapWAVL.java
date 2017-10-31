@@ -542,7 +542,7 @@ If the procedure increases the rank of a node x, so that it becomes equal to the
 	    x.rank--;
 	    if (x.left == sibling) { // delete was on right side, check if left too tall
 		if (sibling != null && x.rank - sibling.rank == 0) {
-		    if (sibling.right != null && (sibling.rank - sibling.right.rank) == 1) {
+		    if (sibling.right != null && sibling.rank == 1 + sibling.right.rank) {
 			sibling.rank--;
 			sibling.right.rank++;
 			rotateLeft(sibling);
@@ -550,10 +550,10 @@ If the procedure increases the rank of a node x, so that it becomes equal to the
 			rotateRight(x);
 		    } else {
 			x.rank--;
-			if (sibling.right != null && sibling.right.rank == sibling.left.rank) {
+			if (sibling.left != null && sibling.right != null && sibling.right.rank == sibling.left.rank) {
 			    rotateRight(x);
 			    sibling.rank++;
-			    break;
+			    return;
 			}
 			rotateRight(x);
 		    }
@@ -561,7 +561,7 @@ If the procedure increases the rank of a node x, so that it becomes equal to the
 		}
 	    } else {
 		if (sibling != null && x.rank - sibling.rank == 0) {
-		    if (sibling.left != null && (sibling.rank - sibling.left.rank) == 1) {
+		    if (sibling.left != null && sibling.rank == 1 + sibling.left.rank) {
 			sibling.rank--;
 			sibling.left.rank++;
 			rotateRight(sibling);
@@ -569,13 +569,12 @@ If the procedure increases the rank of a node x, so that it becomes equal to the
 			rotateLeft(x);
 		    } else {
 			x.rank--;
-			if (sibling.left != null && sibling.right.rank == sibling.left.rank) {
+			if (sibling.left != null && sibling.right != null && sibling.right.rank == sibling.left.rank) {
 			    rotateLeft(x);
 			    sibling.rank++;
-			    break;
+			    return;
 			}
 			rotateLeft(x);
-			
 		    }
 		    x = x.parent;
 		}
@@ -586,7 +585,8 @@ If the procedure increases the rank of a node x, so that it becomes equal to the
 	    
 	    Entry<K, V> oldParent = x;
 	    x = x.parent;
-	    if (x.rank - oldParent.rank != 3) break;
+	    if (x.rank - oldParent.rank != 3) 
+		return;
 	    sibling = (x.left == oldParent) ? x.right : x.left;
 	} while (true); 
     }
