@@ -541,32 +541,49 @@ If the procedure increases the rank of a node x, so that it becomes equal to the
 	do {
 	    x.rank--;
 	    if (x.left == sibling) { // delete was on right side, check if left too tall
-		if (sibling != null && x.rank - sibling.rank <= 0) {
+		if (sibling != null && x.rank - sibling.rank == 0) {
 		    if (sibling.right != null && (sibling.rank - sibling.right.rank) == 1) {
 			sibling.rank--;
 			sibling.right.rank++;
 			rotateLeft(sibling);
+			x.rank--;
+			rotateRight(x);
+			
+		    } else {
+			int xRank = x.rank;
+			x.rank--;
+			rotateRight(x);
+			if (xRank + 1 == x.rank)
+			    break;
 		    }
-		    x.rank--;
-		    rotateRight(x);
-		    break;
+		    x = x.parent;
 		}
 	    } else {
-		if (sibling != null && x.rank - sibling.rank <= 0) {
+		if (sibling != null && x.rank - sibling.rank == 0) {
 		    if (sibling.left != null && (sibling.rank - sibling.left.rank) == 1) {
 			sibling.rank--;
 			sibling.left.rank++;
 			rotateRight(sibling);
+			x.rank--;
+			rotateLeft(x);
+		    } else {
+			int xRank = x.rank;
+			x.rank--;
+			rotateLeft(x);
+			if (xRank + 1 == x.rank)
+			    break;
 		    }
-		    x.rank--;
-		    rotateLeft(x);
-		    break;
+		    x = x.parent;
 		}
 	    }
 	    
-	    sibling = (x.parent == x.left) ? x.right : x.left;
+	    if (x.parent == null) 
+		return;
+	    
+	    sibling = x;
 	    x = x.parent;
-	} while (x != null && sibling.rank + 1 != x.rank);
+	    sibling = (x.left == sibling) ? x.right : x.left;
+	} while (true); //sibling.rank + 1 != x.rank TODO add exit condition?
     }
     
     /**
