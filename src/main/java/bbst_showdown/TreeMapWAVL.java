@@ -548,13 +548,14 @@ If the procedure increases the rank of a node x, so that it becomes equal to the
 			rotateLeft(sibling);
 			x.rank--;
 			rotateRight(x);
-			
 		    } else {
-			int xRank = x.rank;
 			x.rank--;
-			rotateRight(x);
-			if (xRank + 1 == x.rank)
+			if (sibling.right != null && sibling.right.rank == sibling.left.rank) {
+			    rotateRight(x);
+			    sibling.rank++;
 			    break;
+			}
+			rotateRight(x);
 		    }
 		    x = x.parent;
 		}
@@ -567,11 +568,14 @@ If the procedure increases the rank of a node x, so that it becomes equal to the
 			x.rank--;
 			rotateLeft(x);
 		    } else {
-			int xRank = x.rank;
 			x.rank--;
-			rotateLeft(x);
-			if (xRank + 1 == x.rank)
+			if (sibling.left != null && sibling.right.rank == sibling.left.rank) {
+			    rotateLeft(x);
+			    sibling.rank++;
 			    break;
+			}
+			rotateLeft(x);
+			
 		    }
 		    x = x.parent;
 		}
@@ -580,10 +584,11 @@ If the procedure increases the rank of a node x, so that it becomes equal to the
 	    if (x.parent == null) 
 		return;
 	    
-	    sibling = x;
+	    Entry<K, V> oldParent = x;
 	    x = x.parent;
-	    sibling = (x.left == sibling) ? x.right : x.left;
-	} while (true); //sibling.rank + 1 != x.rank TODO add exit condition?
+	    if (x.rank - oldParent.rank != 3) break;
+	    sibling = (x.left == oldParent) ? x.right : x.left;
+	} while (true); 
     }
     
     /**
