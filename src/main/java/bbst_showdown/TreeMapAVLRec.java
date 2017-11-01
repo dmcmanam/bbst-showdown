@@ -54,32 +54,34 @@ public class TreeMapAVLRec<K, V> extends TreeMapAVL<K, V> {
     
     boolean rebalanced;  // flag to signal re-tracing can stop after insertion because a rebalance was performed or isn't necessary
     
-    private Entry<K,V> put(Entry<K,V> x, K key, V value) {
-        if (x == null) 
-        		return new Entry<>(key, value, null);
-        @SuppressWarnings("unchecked")
-        Comparable<? super K> k = (Comparable<? super K>) key;
-        int cmp = k.compareTo(x.key);
-        if (cmp < 0) {
-            x.left = put(x.left, key, value);
-            if (!rebalanced) x.balance--;
-        } else if (cmp > 0) {
-            x.right = put(x.right, key, value);
-            if (!rebalanced) x.balance++;
-        } else {
-            x.value = value;
-            rebalanced = true;
-            size--;
-            return x;
-        }
-        
-        if (x.balance == 0) {
-        		rebalanced = true;
-        } else if (Math.abs(x.balance) == 2) {
-    			rebalanced = true;
-    			return balance(x);
-        } 
-        	return x;
+    private Entry<K, V> put(Entry<K, V> x, K key, V value) {
+	if (x == null)
+	    return new Entry<>(key, value, null);
+	@SuppressWarnings("unchecked")
+	Comparable<? super K> k = (Comparable<? super K>) key;
+	int cmp = k.compareTo(x.key);
+	if (cmp < 0) {
+	    x.left = put(x.left, key, value);
+	    if (!rebalanced)
+		x.balance--;
+	} else if (cmp > 0) {
+	    x.right = put(x.right, key, value);
+	    if (!rebalanced)
+		x.balance++;
+	} else {
+	    x.value = value;
+	    rebalanced = true;
+	    size--;
+	    return x;
+	}
+
+	if (x.balance == 0) {
+	    rebalanced = true;
+	} else if (Math.abs(x.balance) == 2) {
+	    rebalanced = true;
+	    return balance(x);
+	}
+	return x;
     }
 
     /**
@@ -144,7 +146,6 @@ public class TreeMapAVLRec<K, V> extends TreeMapAVL<K, V> {
     }
 
     public String toString() {
-	return "AVL(recursive w/balance factor) tree of size: " + size + ", height: " + treeHeight() + ", rotations "
-		+ rotations;
+	return "AVL(recursive w/balance factor) tree of size: " + size + ", height: " + treeHeight() + ", rotations " + rotations;
     }
 }
