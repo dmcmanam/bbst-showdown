@@ -534,32 +534,42 @@ public class TreeMapAVL<K, V> extends AbstractMap<K, V> {
 	    } else if (p == p.parent.left) {
 		p.parent.left = replacement;
 		p.parent.balance++;
+		if (replacement.parent.balance == 1) {
+		    p.left = p.right = p.parent = null;
+		    return;
+		}
 	    } else {
 		p.parent.right = replacement;
 		p.parent.balance--;
+		if (replacement.parent.balance == -1) {
+		    p.left = p.right = p.parent = null;
+		    return;
+		}
 	    }
 
 	    // Null out links so they are OK to use by fixAfterDeletion.
 	    p.left = p.right = p.parent = null;
-
-	    if (Math.abs(replacement.parent.balance) != 1)
-		fixAfterDeletion(replacement.parent);
+	    fixAfterDeletion(replacement.parent);
 	} else if (p.parent == null) { // return if we are the only node.
 	    root = null;
 	} else { // No children.
 	    Entry<K, V> fixPoint = p.parent;
 
-	    if (p == p.parent.left) {
-		p.parent.balance++;
-		p.parent.left = null;
-	    } else if (p == p.parent.right) {
-		p.parent.balance--;
-		p.parent.right = null;
+	    if (p == fixPoint.left) {
+		fixPoint.left = null;
+		fixPoint.balance++;
+		p.parent = null;
+		if (fixPoint.balance == 1)
+		    return;
+	    } else {
+		fixPoint.right = null;
+		fixPoint.balance--;
+		p.parent = null;
+		if (fixPoint.balance == -1) 
+		    return;
 	    }
-	    p.parent = null;
-
-	    if (Math.abs(fixPoint.balance) != 1)
-		fixAfterDeletion(fixPoint);
+	    
+	    fixAfterDeletion(fixPoint);
 	}
     }
 
@@ -570,7 +580,6 @@ public class TreeMapAVL<K, V> extends AbstractMap<K, V> {
 		    x.balance = 0;
 		    x.right.balance = 0;
 		    rotateLeft(x);
-		    x = x.parent;
 		} else if (x.right.balance == 0) {
 		    x.balance = 1;
 		    x.right.balance = -1;
@@ -585,17 +594,15 @@ public class TreeMapAVL<K, V> extends AbstractMap<K, V> {
 			x.balance = -1;
 		    else if (rlBalance == -1)
 			x.right.balance = 1;
-
 		    rotateRight(x.right);
 		    rotateLeft(x);
-		    x = x.parent;
 		}
+		x = x.parent;
 	    } else if (x.balance == -2) {
 		if (x.left.balance == -1) {
 		    x.balance = 0;
 		    x.left.balance = 0;
 		    rotateRight(x);
-		    x = x.parent;
 		} else if (x.left.balance == 0) {
 		    x.balance = -1;
 		    x.left.balance = 1;
@@ -610,23 +617,24 @@ public class TreeMapAVL<K, V> extends AbstractMap<K, V> {
 			x.left.balance = -1;
 		    else if (lrBalance == -1)
 			x.balance = 1;
-
 		    rotateLeft(x.left);
 		    rotateRight(x);
-		    x = x.parent;
 		}
-	    }
+		x = x.parent;
+	    } 
 
 	    if (x.parent == null)
 		break;
 	    if (x.parent.left == x) {
 		x.parent.balance++;
-		if (x.parent.balance == 1)
+		if (x.parent.balance == 1) {
 		    break;
+		}
 	    } else {
 		x.parent.balance--;
-		if (x.parent.balance == -1)
+		if (x.parent.balance == -1) {
 		    break;
+		}
 	    }
 
 	    x = x.parent;
