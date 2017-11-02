@@ -12,7 +12,7 @@ import java.util.Spliterator;
 
 
 /**
- * A WAVL tree implementation with rank and no recursion.
+ * An AVL tree implementation with rank and no recursion.
  * 
  * https://en.wikipedia.org/wiki/WAVL_tree
  * 
@@ -207,7 +207,7 @@ public class TreeMapWAVL<K, V> extends AbstractMap<K, V> {
         }
 
         public String toString() {
-            return key + "=" + value;
+            return key + "=" + value + "," + rank;
         }
     }
     
@@ -490,9 +490,8 @@ If the procedure increases the rank of a node x, so that it becomes equal to the
             p = s;
         } // p has 2 children
 
-        // Start fixup at replacement node, if it exists.
         Entry<K,V> replacement = (p.left != null ? p.left : p.right);
-
+        boolean deletedRight = false;
         if (replacement != null) {
             // Link replacement to parent
 	    replacement.parent = p.parent;
@@ -504,6 +503,7 @@ If the procedure increases the rank of a node x, so that it becomes equal to the
 		p.parent.left = replacement;
 		sibling = p.parent.right;
 	    } else {
+		deletedRight = true;
 		p.parent.right = replacement;
 		sibling = p.parent.left;
 	    }
@@ -511,14 +511,10 @@ If the procedure increases the rank of a node x, so that it becomes equal to the
 	    // Null out links so they are OK to use by fixAfterDeletion.
 	    p.left = p.right = p.parent = null;
 
-	    // TODO
-	    if (sibling == null || (replacement.parent.rank - sibling.rank) != 1) {
-		fixAfterDeletion(replacement.parent, sibling);
-	    }
+	    fixAfterDeletion(replacement.parent, sibling, replacement, deletedRight);
         } else if (p.parent == null) { // return if we are the only node.
             root = null;
         } else { //  No children. Use self as phantom replacement and unlink.
-            // TODO check if null check necessary?
             Entry<K, V> fixPoint = p.parent;
             Entry<K, V> sibling = null;
 
@@ -526,69 +522,82 @@ If the procedure increases the rank of a node x, so that it becomes equal to the
 		p.parent.left = null;
 		sibling = fixPoint.right;
 	    } else if (p == p.parent.right) {
+		deletedRight = true;
 		p.parent.right = null;
 		sibling = fixPoint.left;
 	    }
 	    p.parent = null;
-
-	    if (sibling == null || (fixPoint.rank - p.rank >= 2) || (fixPoint.rank - sibling.rank) != 1 ) {
-		fixAfterDeletion(fixPoint, sibling);
-	    }
+	    p.rank--;
+	    fixAfterDeletion(fixPoint, sibling, p, deletedRight);
         }
     }
     
-    private void fixAfterDeletion(Entry<K, V> x, Entry<K,V> sibling) {
-	do {
-	    x.rank--;
-	    if (x.left == sibling) { // delete was on right side, check if left too tall
-		if (sibling != null && x.rank - sibling.rank == 0) {
-		    if (sibling.right != null && sibling.rank == 1 + sibling.right.rank) {
-			sibling.rank--;
+    private byte rank(final Entry<K,V> node) {
+	return (node == null) ? -1 : node.rank;
+    }
+    
+    // actually just an normal AVL delete first, then I'll write WAVL.
+    private void fixAfterDeletion(Entry<K, V> parent, Entry<K,V> sibling, Entry<K,V> node, boolean deletedRight) {
+	while (true) {
+	    int balance = rank(sibling) - node.rank;
+	    if (balance == 0) {// side of delete was taller, decrement and continue
+		parent.rank--;
+	    } else if (deletedRight) {
+		if (balance == 1)
+		    break;
+		else if (balance == 2) {
+		    int siblingBalance = rank(sibling.right) - rank(sibling.left);
+		    if (siblingBalance == 0) { // parent height unchanged after rotate so break
+			parent.rank--;
+			sibling.rank++;
+			rotateRight(parent);
+			break;
+		    } else if (siblingBalance > 0) {
 			sibling.right.rank++;
-			rotateLeft(sibling);
-			x.rank--;
-			rotateRight(x);
-		    } else {
-			x.rank--;
-			if (sibling.left != null && sibling.right != null && sibling.right.rank == sibling.left.rank) {
-			    rotateRight(x);
-			    sibling.rank++;
-			    return;
-			}
-			rotateRight(x);
-		    }
-		    x = x.parent;
-		}
-	    } else {
-		if (sibling != null && x.rank - sibling.rank == 0) {
-		    if (sibling.left != null && sibling.rank == 1 + sibling.left.rank) {
 			sibling.rank--;
-			sibling.left.rank++;
-			rotateRight(sibling);
-			x.rank--;
-			rotateLeft(x);
-		    } else {
-			x.rank--;
-			if (sibling.left != null && sibling.right != null && sibling.right.rank == sibling.left.rank) {
-			    rotateLeft(x);
-			    sibling.rank++;
-			    return;
-			}
-			rotateLeft(x);
+			rotateLeft(sibling);
 		    }
-		    x = x.parent;
+		    rotateRight(parent);
+		    parent.rank -= 2;
+		    parent = parent.parent;
+		} else {
+		    parent.rank--;
+		}
+	    } else { // delete on left
+		if (balance == 1)
+		    break;
+		else if (balance == 2) {
+		    int siblingBalance = rank(sibling.right) - rank(sibling.left);
+		    if (siblingBalance == 0) { // parent height unchanged after rotate so break
+			parent.rank--;
+			sibling.rank++;
+			rotateLeft(parent);
+			break;
+		    } else if (siblingBalance < 0) {
+			sibling.left.rank++;
+			sibling.rank--;
+			rotateRight(sibling);
+		    }
+		    rotateLeft(parent);
+		    parent.rank -= 2;
+		    parent = parent.parent;
+		} else {
+		    parent.rank--;
 		}
 	    }
 	    
-	    if (x.parent == null) 
+	    if (parent.parent == null) 
 		return;
-	    
-	    Entry<K, V> oldParent = x;
-	    x = x.parent;
-	    if (x.rank - oldParent.rank != 3) 
-		return;
-	    sibling = (x.left == oldParent) ? x.right : x.left;
-	} while (true); 
+	    node = parent;
+	    parent = parent.parent;
+	   if (parent.left == node) {
+	       sibling = parent.right; 
+	       deletedRight = false;
+	   } else {
+	       sibling = parent.left;
+	       deletedRight = true;
+	   }
+	}
     }
     
     /**

@@ -63,12 +63,18 @@ public class TreeMapWAVLTest {
     
     @Test
     public void testDeleteMany() {
-	Integer [] a = {477, 1193, 2130,398,1393,946,422,1381,1767,830,570,1085,741,598,1658,1801,487,1921,1918,258,135,975,1870};
+	Integer [] a = {477,1193,2130,398,1393,946,422,1381,1767,830,570,1085,741,598,1658,1801,487};//,1921,1918,258,135,975,1870};
 	for (int i=0; i < a.length; i++)
 	    x.put(a[i], a[i]);
-	for (int i=0; i < a.length; i++) {
+	for (int i=a.length-1; i > 0; i--) {
+	    System.out.println("Deleting:" + i + " value:" + a[i]);
 	    x.remove(a[i], a[i]);
+	    
 	}
+	assertEquals(477, (int) x.root.value);
+	assertEquals(0, x.root.rank);
+	assertNull(x.root.left);
+	assertNull(x.root.right);
     }
     
     @Test
@@ -187,7 +193,7 @@ public class TreeMapWAVLTest {
     }
     
     @Test
-    public void testDeleteDoNothing() {
+    public void testDeleteNoRotation() {
 	x.put(2, 2);
 	x.put(3, 3);
 	x.put(1, 1);
@@ -206,13 +212,34 @@ public class TreeMapWAVLTest {
     @Test
     public void testDeleteOneRightRotation() {
 	x.put(10, 10);
-	x.put(8, 8);
-	x.put(12, 12);
+	x.put(8, 8); x.put(12, 12);
 	x.put(6, 6);
 	
 	x.remove(12);
 	
 	assertEquals(1, x.root.rank);
+	assertEquals(8, (int) x.root.value);
+	assertEquals(1, x.rotations);
+    }
+    
+    @Test
+    public void testDeleteOneRightRotationSiblingBalanced() {
+	x.put(10, 10);
+	x.put(8, 8);x.put(12, 12);
+	x.put(6,6);x.put(9,9);
+	
+	assertEquals(0, x.rotations);
+	
+	x.remove(12);
+	/* after
+	 8
+       6   10
+          9
+	 */
+	assertEquals(2, x.root.rank);
+	assertEquals(6, (int) x.root.left.value);
+	assertEquals(1, x.root.right.rank);
+	assertEquals(0, x.root.left.rank);
 	assertEquals(8, (int) x.root.value);
 	assertEquals(1, x.rotations);
     }
@@ -225,21 +252,28 @@ public class TreeMapWAVLTest {
 	x.put(9, 9);
 	
 	x.remove(12);
+	/*
+	  9
+	8  10
+	 */
 	
+	assertEquals(0, x.root.right.rank);
+	assertEquals(0, x.root.left.rank);
 	assertEquals(1, x.root.rank);
 	assertEquals(9, (int) x.root.value);
 	assertEquals(2, x.rotations);
     }
     
     @Test
-    public void testDelete6() {
+    public void testDelete5() {
 	for (int i=0; i<6; i++)
 	    x.put(i, i);
-	for (int i=0; i<6; i++) {
-	    System.out.println(x.root + "Deleting:"+ i);
+	for (int i=0; i<5; i++) {
+	    System.out.println("Root:" + x.root + " Deleting:"+ i);
 	    x.remove(i);
 	}
-	assertEquals(0, x.size());
+	assertEquals(1, x.size());
+	assertEquals(0, x.root.rank);
     }
     
     @Test
@@ -258,5 +292,11 @@ public class TreeMapWAVLTest {
 	System.out.println("ROOT:"+ x.root);
 	assertEquals(2, x.rotations);
 	assertEquals(5, (int) x.root.value);
+	
+	x.remove(4);
+	assertEquals(2, (int) x.root.left.value);
+	assertEquals(1, x.root.left.rank);
+	x.inOrderTraversal(x.root);
+	
     }
 }
