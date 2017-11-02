@@ -540,63 +540,54 @@ If the procedure increases the rank of a node x, so that it becomes equal to the
     private void fixAfterDeletion(Entry<K, V> parent, Entry<K,V> sibling, Entry<K,V> node, boolean deletedRight) {
 	while (true) {
 	    int balance = rank(sibling) - node.rank;
+	    
+	    if (balance == 1) // height was equal before delete, parent unchanged so break
+		break;
 	    if (balance == 0) {// side of delete was taller, decrement and continue
 		parent.rank--;
 	    } else if (deletedRight) {
-		if (balance == 1)
-		    break;
-		else if (balance == 2) {
-		    int siblingBalance = rank(sibling.right) - rank(sibling.left);
-		    if (siblingBalance == 0) { // parent height unchanged after rotate so break
-			parent.rank--;
-			sibling.rank++;
-			rotateRight(parent);
-			break;
-		    } else if (siblingBalance > 0) {
-			sibling.right.rank++;
-			sibling.rank--;
-			rotateLeft(sibling);
-		    }
+		parent.rank--;
+		int siblingBalance = rank(sibling.right) - rank(sibling.left);
+		if (siblingBalance == 0) { // parent height unchanged after rotate so break
+		    sibling.rank++;
 		    rotateRight(parent);
-		    parent.rank -= 2;
-		    parent = parent.parent;
-		} else {
-		    parent.rank--;
-		}
-	    } else { // delete on left
-		if (balance == 1)
 		    break;
-		else if (balance == 2) {
-		    int siblingBalance = rank(sibling.right) - rank(sibling.left);
-		    if (siblingBalance == 0) { // parent height unchanged after rotate so break
-			parent.rank--;
-			sibling.rank++;
-			rotateLeft(parent);
-			break;
-		    } else if (siblingBalance < 0) {
-			sibling.left.rank++;
-			sibling.rank--;
-			rotateRight(sibling);
-		    }
-		    rotateLeft(parent);
-		    parent.rank -= 2;
-		    parent = parent.parent;
-		} else {
-		    parent.rank--;
+		} else if (siblingBalance > 0) {
+		    sibling.right.rank++;
+		    sibling.rank--;
+		    rotateLeft(sibling);
 		}
+		rotateRight(parent);
+		parent.rank--;
+		parent = parent.parent;
+	    } else { // delete on left
+		parent.rank--;
+		int siblingBalance = rank(sibling.right) - rank(sibling.left);
+		if (siblingBalance == 0) { // parent height unchanged after rotate so break
+		    sibling.rank++;
+		    rotateLeft(parent);
+		    break;
+		} else if (siblingBalance < 0) {
+		    sibling.left.rank++;
+		    sibling.rank--;
+		    rotateRight(sibling);
+		}
+		rotateLeft(parent);
+		parent.rank--;
+		parent = parent.parent;
 	    }
-	    
-	    if (parent.parent == null) 
+
+	    if (parent.parent == null)
 		return;
 	    node = parent;
 	    parent = parent.parent;
-	   if (parent.left == node) {
-	       sibling = parent.right; 
-	       deletedRight = false;
-	   } else {
-	       sibling = parent.left;
-	       deletedRight = true;
-	   }
+	    if (parent.left == node) {
+		sibling = parent.right;
+		deletedRight = false;
+	    } else {
+		sibling = parent.left;
+		deletedRight = true;
+	    }
 	}
     }
     
