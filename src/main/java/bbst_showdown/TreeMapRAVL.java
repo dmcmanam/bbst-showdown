@@ -361,10 +361,10 @@ public class TreeMapRAVL<K, V> extends AbstractMap<K, V> {
     }
     
     /**
-If the path of incremented ranks reaches the root of the tree, then the rebalancing procedure stops.
-If the path of incremented ranks reaches a node whose parent's rank previously differed by two and after incrementing now differ by one,
-the rebalancing procedure stops without changing the structure of the tree.
-If the procedure increases the rank of a node x, so that it becomes equal to the rank of the parent y of x, 
+- If the path of incremented ranks reaches the root of the tree the rebalancing procedure stops.
+- If the path of incremented ranks reaches a node whose parent's rank previously differed by two and after incrementing now differ by one,
+the rebalancing procedure stops.
+- If the procedure increases the rank of a node x, so that it becomes equal to the rank of the parent y of x, 
   but the other child of y has a rank that is smaller by two (so that the rank of y cannot be increased) 
   then again the rebalancing procedure stops after performing rotations necessary.
      */
