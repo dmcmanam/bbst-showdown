@@ -12,20 +12,19 @@ import java.util.Spliterator;
 
 
 /**
- * An AVL tree implementation with rank and no recursion.
+ * Both an AVL and relaxed AVL (RAVL) tree implementation with rank, parent references and bottom-up rebalancing.
  * 
- * https://en.wikipedia.org/wiki/WAVL_tree
+ * A normal AVL tree becomes a RAVL tree when delete rebalancing is turned off, rebalancing is then only performed for insertions.
  * 
- * <p>This implementation provides guaranteed log(n) time cost for the
- * {@code containsKey}, {@code get}, {@code put} and {@code remove}
- * operations. 
+ * The RAVL tree is described in the 2016 paper "Deletion Without Rebalancing in Binary Search Trees"
+ * http://sidsen.azurewebsites.net//
  * 
  * @author David McManamon
  *
  * @param <K> the type of keys maintained by this map
  * @param <V> the type of mapped values
  */
-public class TreeMapWAVL<K, V> extends AbstractMap<K, V> {
+public class TreeMapRAVL<K, V> extends AbstractMap<K, V> {
     
     protected transient Entry<K, V> root = null;
 
@@ -49,6 +48,12 @@ public class TreeMapWAVL<K, V> extends AbstractMap<K, V> {
     
     protected transient int rotations = 0;
     
+    protected boolean deleteRebalance = false;
+    
+    
+    public TreeMapRAVL() {
+	this.comparator = null;
+    }
     /**
      * Constructs a new, empty tree map, using the natural ordering of its
      * keys.  All keys inserted into the map must implement the {@link
@@ -61,8 +66,9 @@ public class TreeMapWAVL<K, V> extends AbstractMap<K, V> {
      * {@code put(Object key, Object value)} call will throw a
      * {@code ClassCastException}.
      */
-    public TreeMapWAVL() {
-	comparator = null;
+    public TreeMapRAVL(boolean deleteRebalance) {
+	this.deleteRebalance = deleteRebalance;
+	this.comparator = null;
     }
     
     /**
@@ -79,7 +85,7 @@ public class TreeMapWAVL<K, V> extends AbstractMap<K, V> {
      *         or are not mutually comparable
      * @throws NullPointerException if the specified map is null
      */
-    public TreeMapWAVL(Map<? extends K, ? extends V> m) {
+    public TreeMapRAVL(Map<? extends K, ? extends V> m) {
         comparator = null;
         putAll(m);
     }
@@ -99,7 +105,7 @@ public class TreeMapWAVL<K, V> extends AbstractMap<K, V> {
     }
 
     public String toString() {
-	return "WAVL tree of size: " + size + ", height: " + treeHeight() + ", rotations " + rotations;
+	return "RAVL tree of size: " + size + ", height: " + treeHeight() + ", rotations " + rotations;
     }
     
     /**
@@ -367,8 +373,9 @@ If the procedure increases the rank of a node x, so that it becomes equal to the
 	    Entry<K, V> parent = x.parent;
 	    if (parent.left == x) { // new node was added on the left
 		if (needToRotateRight(parent)) {
-		    if (x.right != null && x.rank == x.right.rank + 1) {
-			x.rank--; x.right.rank++;
+		    if (x.left == null || x.rank >= x.left.rank + 2) {
+			x.rank--; 
+			x.right.rank++;
 			rotateLeft(x);
 		    }
 		    parent.rank--;
@@ -377,8 +384,9 @@ If the procedure increases the rank of a node x, so that it becomes equal to the
 		}
 	    } else {
 		if (needToRotateLeft(parent)) {
-		    if (x.left != null && x.rank == x.left.rank + 1) {
-			x.rank--; x.left.rank++;
+		    if (x.right == null || x.rank >= x.right.rank + 2) {
+			x.rank--; 
+			x.left.rank++;
 			rotateRight(x);
 		    }
 		    parent.rank--;
@@ -392,24 +400,24 @@ If the procedure increases the rank of a node x, so that it becomes equal to the
 	}
     }
 
-    // check if sibling node has a rank difference of 2
+    // check if sibling node has a rank difference of 2 or greater
     private boolean needToRotateLeft(Entry<K, V> p) {
 	if (p.left == null) { // rank of sibling is -1
 	    if (p.rank == 1)
 		return true;
 	    return false;
-	} else if (p.rank == p.left.rank + 2)
+	} else if (p.rank >= p.left.rank + 2)
 	    return true;
 	return false;
     }
 
-    // check if sibling node has a rank difference of 2
+    // check if sibling node has a rank difference of 2 or greater (RAVL)
     private boolean needToRotateRight(Entry<K, V> p) {
 	if (p.right == null) { // rank of sibling is -1
 	    if (p.rank == 1)
 		return true;
 	    return false;
-	} else if (p.rank == p.right.rank + 2)
+	} else if (p.rank >= p.right.rank + 2)
 	    return true;
 	return false;
     }
@@ -510,8 +518,8 @@ If the procedure increases the rank of a node x, so that it becomes equal to the
 
 	    // Null out links so they are OK to use by fixAfterDeletion.
 	    p.left = p.right = p.parent = null;
-
-	    fixAfterDeletion(replacement.parent, sibling, replacement, deletedRight);
+	    if (deleteRebalance)
+		fixAfterDeletion(replacement.parent, sibling, replacement, deletedRight);
         } else if (p.parent == null) { // return if we are the only node.
             root = null;
         } else { //  No children. Use self as phantom replacement and unlink.
@@ -528,28 +536,32 @@ If the procedure increases the rank of a node x, so that it becomes equal to the
 	    }
 	    p.parent = null;
 	    p.rank--;
-	    fixAfterDeletion(fixPoint, sibling, p, deletedRight);
+	    if (deleteRebalance)
+		fixAfterDeletion(fixPoint, sibling, p, deletedRight);
         }
     }
     
     private byte rank(final Entry<K,V> node) {
 	return (node == null) ? -1 : node.rank;
     }
-    
-    // actually just an normal AVL delete first, then I'll write WAVL.
-    private void fixAfterDeletion(Entry<K, V> parent, Entry<K,V> sibling, Entry<K,V> node, boolean deletedRight) {
+
+    /*
+     * The extra cases for AVL/WAVL deletion make this code a little cumbersome and OPTIONAL in this RAVL tree implementation.
+     */
+    private void fixAfterDeletion(Entry<K, V> parent, Entry<K, V> sibling, Entry<K, V> node, boolean deletedRight) {
 	while (true) {
 	    int balance = rank(sibling) - node.rank;
-	    
+	   
 	    if (balance == 1) // height was equal before delete, parent unchanged so break
 		break;
 	    if (balance == 0) {// side of delete was taller, decrement and continue
 		parent.rank--;
 	    } else if (deletedRight) {
-		parent.rank--;
+		parent.rank -= 2;
 		int siblingBalance = rank(sibling.right) - rank(sibling.left);
 		if (siblingBalance == 0) { // parent height unchanged after rotate so break
 		    sibling.rank++;
+		    parent.rank++;
 		    rotateRight(parent);
 		    break;
 		} else if (siblingBalance > 0) {
@@ -558,13 +570,13 @@ If the procedure increases the rank of a node x, so that it becomes equal to the
 		    rotateLeft(sibling);
 		}
 		rotateRight(parent);
-		parent.rank--;
 		parent = parent.parent;
 	    } else { // delete on left
-		parent.rank--;
+		parent.rank -= 2;
 		int siblingBalance = rank(sibling.right) - rank(sibling.left);
 		if (siblingBalance == 0) { // parent height unchanged after rotate so break
 		    sibling.rank++;
+		    parent.rank++;
 		    rotateLeft(parent);
 		    break;
 		} else if (siblingBalance < 0) {
@@ -573,7 +585,6 @@ If the procedure increases the rank of a node x, so that it becomes equal to the
 		    rotateRight(sibling);
 		}
 		rotateLeft(parent);
-		parent.rank--;
 		parent = parent.parent;
 	    }
 
@@ -754,11 +765,11 @@ If the procedure increases the rank of a node x, so that it becomes equal to the
 	}
 
 	public int size() {
-	    return TreeMapWAVL.this.size();
+	    return TreeMapRAVL.this.size();
 	}
 
 	public void clear() {
-	    TreeMapWAVL.this.clear();
+	    TreeMapRAVL.this.clear();
 	}
 
 	public Spliterator<Map.Entry<K, V>> spliterator() {

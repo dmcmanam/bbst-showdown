@@ -5,9 +5,9 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 
-public class TreeMapWAVLTest {
+public class TreeMapRAVLTest {
     
-    TreeMapWAVL<Integer, Integer> x = new TreeMapWAVL<>();
+    TreeMapRAVL<Integer, Integer> x = new TreeMapRAVL<>();
     
     @Before
     public void setup(){
@@ -278,7 +278,7 @@ public class TreeMapWAVLTest {
     
     @Test
     public void testDeleteFibonacciTree() {
-	TreeMapWAVL<Integer, Integer> x = new TreeMapWAVL<>();
+	TreeMapRAVL<Integer, Integer> x = new TreeMapRAVL<>();
 	x.put(8, 8); // root
 	x.put(5, 5); x.put(11, 11);
 	// 3,7,10,12

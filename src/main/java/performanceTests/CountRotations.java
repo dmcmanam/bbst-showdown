@@ -4,7 +4,7 @@ import java.util.Map;
 
 import bbst_showdown.TreeMapAVL;
 import bbst_showdown.TreeMapRedBlack;
-import bbst_showdown.TreeMapWAVL;
+import bbst_showdown.TreeMapRAVL;
 
 public class CountRotations {
     public static void main(String [] args) {
@@ -19,12 +19,12 @@ public class CountRotations {
 	
 	System.out.println("Results for inserting integer clusters in sequences of 16 and total size: " + groupedRandomNumbers.length + " -");
 	
-	TreeMapWAVL<Integer, Integer> wavl = new TreeMapWAVL<>();
+	TreeMapRAVL<Integer, Integer> ravl = new TreeMapRAVL<>();
 	TreeMapAVL<Integer, Integer> avl = new TreeMapAVL<>();
 	TreeMapRedBlack<Integer, Integer> redBlack = new TreeMapRedBlack<>();
 	
 	insert(avl, groupedRandomNumbers);
-	insert(wavl, groupedRandomNumbers);
+	insert(ravl, groupedRandomNumbers);
 	insert(redBlack, groupedRandomNumbers);
     }
     
