@@ -166,6 +166,10 @@ public class TreeMapRAVL<K, V> extends AbstractMap<K, V> {
             this.value = value;
             this.parent = parent;
         }
+        
+        Entry() {
+            rank = -1;
+        }
 
         /**
          * Returns the key.
@@ -499,7 +503,6 @@ the rebalancing procedure stops.
         } // p has 2 children
 
         Entry<K,V> replacement = (p.left != null ? p.left : p.right);
-        boolean deletedRight = false;
         if (replacement != null) {
             // Link replacement to parent
 	    replacement.parent = p.parent;
@@ -511,7 +514,6 @@ the rebalancing procedure stops.
 		p.parent.left = replacement;
 		sibling = p.parent.right;
 	    } else {
-		deletedRight = true;
 		p.parent.right = replacement;
 		sibling = p.parent.left;
 	    }
@@ -519,7 +521,7 @@ the rebalancing procedure stops.
 	    // Null out links so they are OK to use by fixAfterDeletion.
 	    p.left = p.right = p.parent = null;
 	    if (deleteRebalance)
-		fixAfterDeletion(replacement.parent, sibling, replacement, deletedRight);
+		fixAfterDeletion(replacement.parent, sibling, replacement);
         } else if (p.parent == null) { // return if we are the only node.
             root = null;
         } else { //  No children. Use self as phantom replacement and unlink.
@@ -530,14 +532,13 @@ the rebalancing procedure stops.
 		p.parent.left = null;
 		sibling = fixPoint.right;
 	    } else if (p == p.parent.right) {
-		deletedRight = true;
 		p.parent.right = null;
 		sibling = fixPoint.left;
 	    }
 	    p.parent = null;
 	    p.rank--;
 	    if (deleteRebalance)
-		fixAfterDeletion(fixPoint, sibling, p, deletedRight);
+		fixAfterDeletion(fixPoint, sibling, p);
         }
     }
     
@@ -545,18 +546,26 @@ the rebalancing procedure stops.
 	return (node == null) ? -1 : node.rank;
     }
 
+    @SuppressWarnings("rawtypes")
+    private final Entry EMPTY_NODE = new Entry();
+    
     /*
      * The extra cases for AVL/WAVL deletion make this code a little cumbersome and OPTIONAL in this RAVL tree implementation.
      */
-    private void fixAfterDeletion(Entry<K, V> parent, Entry<K, V> sibling, Entry<K, V> node, boolean deletedRight) {
+    private void fixAfterDeletion(Entry<K, V> parent, Entry<K, V> sibling, Entry<K, V> node) {
+	if (sibling == null) {
+	    sibling = EMPTY_NODE;
+	    EMPTY_NODE.parent = parent;
+	}
+	
 	while (true) {
-	    int balance = rank(sibling) - node.rank;
+	    int balance = sibling.rank - node.rank;
 	   
 	    if (balance == 1) // height was equal before delete, parent unchanged so break
 		break;
 	    if (balance == 0) {// side of delete was taller, decrement and continue
 		parent.rank--;
-	    } else if (deletedRight) {
+	    } else if (sibling.parent.left == sibling) {
 		parent.rank -= 2;
 		int siblingBalance = rank(sibling.right) - rank(sibling.left);
 		if (siblingBalance == 0) { // parent height unchanged after rotate so break
@@ -592,13 +601,7 @@ the rebalancing procedure stops.
 		return;
 	    node = parent;
 	    parent = parent.parent;
-	    if (parent.left == node) {
-		sibling = parent.right;
-		deletedRight = false;
-	    } else {
-		sibling = parent.left;
-		deletedRight = true;
-	    }
+	    sibling = (parent.left == node) ? parent.right : parent.left;
 	}
     }
     
