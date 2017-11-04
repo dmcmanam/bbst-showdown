@@ -553,16 +553,14 @@ the rebalancing procedure stops.
      * The extra cases for AVL/WAVL deletion make this code a little cumbersome and OPTIONAL in this RAVL tree implementation.
      */
     private void fixAfterDeletion(Entry<K, V> parent, Entry<K, V> sibling, Entry<K, V> node) {
-	if (sibling == null) {
+	if (sibling == null) { // remove sibling null check with empty node
 	    sibling = EMPTY_NODE;
 	    EMPTY_NODE.parent = parent;
 	}
 	
-	while (true) {
-	    int balance = sibling.rank - node.rank;
-	   
-	    if (balance == 1) // height was equal before delete, parent unchanged so break
-		break;
+	int balance = sibling.rank - node.rank;
+	
+	while (balance != 1) { // balance == 1 means prior to delete parent was balanced, break;
 	    if (balance == 0) {// side of delete was taller, decrement and continue
 		parent.rank--;
 	    } else if (sibling.parent.left == sibling) {
@@ -602,6 +600,7 @@ the rebalancing procedure stops.
 	    node = parent;
 	    parent = parent.parent;
 	    sibling = (parent.left == node) ? parent.right : parent.left;
+	    balance = sibling.rank - node.rank;
 	}
     }
     
