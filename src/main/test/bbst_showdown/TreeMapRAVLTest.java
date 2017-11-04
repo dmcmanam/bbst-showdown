@@ -7,7 +7,7 @@ import org.junit.Test;
 
 public class TreeMapRAVLTest {
     
-    TreeMapRAVL<Integer, Integer> x = new TreeMapRAVL<>();
+    TreeMapRAVL<Integer, Integer> x = new TreeMapRAVL<>(true);
     
     @Before
     public void setup(){
@@ -216,10 +216,13 @@ public class TreeMapRAVLTest {
 	x.put(6, 6);
 	
 	x.remove(12);
-	
+	/*
+	  8
+	6  10
+	 */
+	assertEquals(1, x.rotations);
 	assertEquals(1, x.root.rank);
 	assertEquals(8, (int) x.root.value);
-	assertEquals(1, x.rotations);
     }
     
     @Test
@@ -278,7 +281,6 @@ public class TreeMapRAVLTest {
     
     @Test
     public void testDeleteFibonacciTree() {
-	TreeMapRAVL<Integer, Integer> x = new TreeMapRAVL<>();
 	x.put(8, 8); // root
 	x.put(5, 5); x.put(11, 11);
 	// 3,7,10,12
