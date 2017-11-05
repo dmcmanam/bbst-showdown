@@ -370,6 +370,9 @@ public class TreeMapRAVL<K, V> extends AbstractMap<K, V> {
 - If the procedure increases the rank of a node x, so that it becomes equal to the rank of the parent y of x, 
   but the other child of y has a rank that is smaller by two (so that the rank of y cannot be increased) 
   then again the rebalancing procedure stops after performing rotations necessary.
+In other words:
+After insertion rank difference is 1,2 or 3 - 
+check these three cases stopping after any rotations, reaching the root or when rank difference was 2 before the insertion.
      */
     private void fixAfterInsertion(Entry<K, V> x) {
 	for (Entry<K, V> parent = x.parent; 
@@ -548,7 +551,7 @@ public class TreeMapRAVL<K, V> extends AbstractMap<K, V> {
     private final Entry EMPTY_NODE = new Entry();
     
     /*
-     * The extra cases for AVL/WAVL deletion make this code a little cumbersome and OPTIONAL in this RAVL tree implementation.
+     * delete re-tracing via balance factor
      */
     private void fixAfterDeletion(Entry<K, V> parent, Entry<K, V> sibling, Entry<K, V> node) {
 	if (sibling == null)  // remove sibling null check inside loop by testing once here
