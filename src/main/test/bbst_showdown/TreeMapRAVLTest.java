@@ -210,6 +210,23 @@ public class TreeMapRAVLTest {
     }
     
     @Test
+    public void testDeleteNoRotationLeftTallDecrementRank() {
+	x.put(2, 2);
+	x.put(3, 3);
+	x.put(1, 1);
+	x.put(0, 0);
+	assertEquals(2, (int)x.root.value);
+	
+	x.remove(0);
+	/*
+	 2
+	1 3
+	 */
+	assertEquals(1, x.root.rank);
+	assertEquals(0, x.rotations);
+    }
+    
+    @Test
     public void testDeleteOneRightRotation() {
 	x.put(10, 10);
 	x.put(8, 8); x.put(12, 12);
