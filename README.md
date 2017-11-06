@@ -2,16 +2,17 @@
 Performance of RAVL, AVL &amp; Red-black trees compared in Java.
 
 Because AVL trees enforce stricter balance requirements than red-black trees, performance of AVL trees is substantially better when sequential elements are inserted and
-nearly identical for random insertions.  If you are still using red-black trees and performance is important it is time to consider alternatives.
-
-For additional reading see:
+nearly identical for random insertions.  'AVL tree implementations were consistently faster than red-black trees, by up to 20%' in the detailed 2004
+analysis by Ben Pfaff-
+https://benpfaff.org/papers/libavl.pdf
+Although, comparing implementations from this project the difference can be over 30% - 
 https://refactoringlightly.wordpress.com/
 
-There are excellent resources for AVL trees in the c language.  Two of them are:
-https://benpfaff.org/papers/libavl.pdf
-http://www.eternallyconfuzzled.com/tuts/datastructures/jsw_tut_avl.aspx
+What is fascinating about AVL trees is that although they were originally described in a paper from 1962, interesting variations were published in 2015(WAVL) and 2016(RAVL),
+http://sidsen.azurewebsites.net//
+so there remains a great coding opportunity to elegantly implement and explore the posibilites described in recent papers.
 
-However, performance oriented Java implementations of AVL trees were lacking so this project exists.
+Specifically, rank balanced AVL trees are still not common so this project explores their implementation.
 
 Balanced binary trees such as red-black, AVL and RAVL can have a reputation for being difficult to code, 
 that may have been the case in the 90s when coding them from a textbook or a research paper but with modern tools and resources the difficulty has decreased.
