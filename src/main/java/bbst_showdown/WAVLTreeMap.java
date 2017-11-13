@@ -104,7 +104,7 @@ public class WAVLTreeMap<K, V> extends AbstractMap<K, V> {
     }
 
     public String toString() {
-	return "WAVL tree of size: " + size + ", height: " + treeHeight() + ", rotations " + rotations + " WAVL deletes: " + deleteWAVL;
+	return "WAVL tree of size: " + size + ", height: " + treeHeight() + ", rotations " + rotations + " WAVL deletes: " + deleteWAVL + " root:" + root;
     }
     
     /**
@@ -496,7 +496,7 @@ check these three cases stopping after any rotations, reaching the root or when 
         // If strictly internal, copy successor's element to p and then make p
         // point to successor.
         if (p.left != null && p.right != null) {
-            Entry<K,V> s = successor(p);
+            Entry<K,V> s = predecessor(p);
             p.key = s.key;
             p.value = s.value;
             p = s;
@@ -566,13 +566,15 @@ check these three cases stopping after any rotations, reaching the root or when 
 		    sibling.right.rank++;
 		    sibling.rank--;
 		    rotateLeft(sibling);
-		} 
-		if (siblingBalance == 0) {
+		    parent.rank -= 2;
+		} else if (siblingBalance == 0) {
 		    parent.rank--;
+		    sibling.rank++;
 		} else {
 		    parent.rank -= 2;
+		    sibling.rank++;
 		}
-		sibling.rank++;
+		
 		rotateRight(parent);
 		break;
 	    } else { // delete on left
@@ -581,13 +583,15 @@ check these three cases stopping after any rotations, reaching the root or when 
 		    sibling.left.rank++;
 		    sibling.rank--;
 		    rotateRight(sibling);
-		}
-		if (siblingBalance == 0) {
+		    parent.rank -= 2;
+		} else if (siblingBalance == 0) {
 		    parent.rank--;
+		    sibling.rank++;
 		} else {
 		    parent.rank -= 2;
+		    sibling.rank++;
 		}
-		sibling.rank++;
+		
 		rotateLeft(parent);
 		break;
 	    }
@@ -597,7 +601,7 @@ check these three cases stopping after any rotations, reaching the root or when 
 	    node = parent;
 	    parent = parent.parent;
 	    sibling = (parent.left == node) ? parent.right : parent.left;
-	    balance = sibling.rank - node.rank;
+	    balance = rank(sibling) - node.rank;
 	}
     }
     

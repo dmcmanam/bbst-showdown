@@ -210,6 +210,24 @@ public class WAVLTreeMapTest {
     }
     
     @Test
+    public void testDeleteNoRotationWAVL() {
+	x = new WAVLTreeMap<>(true);
+	x.put(2, 2);
+	x.put(3, 3);
+	x.put(1, 1);
+	assertEquals(2, (int)x.root.value);
+	
+	x.remove(3);
+	assertEquals(1, x.root.rank);
+	assertEquals(0, x.rotations);
+	
+	// remove root
+	x.remove(2);
+	x.remove(1);
+	assertEquals(0, x.size());
+    }
+    
+    @Test
     public void testDeleteNoRotationLeftTallDecrementRank() {
 	x.put(2, 2);
 	x.put(3, 3);
@@ -285,6 +303,27 @@ public class WAVLTreeMapTest {
     }
     
     @Test
+    public void testDeleteOneLeftRightRotationWAVL() {
+	x = new WAVLTreeMap<>(true);
+	x.put(10, 10);
+	x.put(8, 8);
+	x.put(12, 12);
+	x.put(9, 9);
+	
+	x.remove(12);
+	/*
+	  9
+	8  10
+	 */
+	
+	assertEquals(0, x.root.right.rank);
+	assertEquals(0, x.root.left.rank);
+	assertEquals(1, x.root.rank);
+	assertEquals(9, (int) x.root.value);
+	assertEquals(2, x.rotations);
+    }
+    
+    @Test
     public void testDelete5() {
 	for (int i=0; i<6; i++)
 	    x.put(i, i);
@@ -294,6 +333,21 @@ public class WAVLTreeMapTest {
 	}
 	assertEquals(1, x.size());
 	assertEquals(0, x.root.rank);
+    }
+    
+    @Test
+    public void testDelete5WAVL() {
+	x = new WAVLTreeMap<>(true);
+	for (int i=0; i<6; i++)
+	    x.put(i, i);
+	for (int i=0; i<5; i++) {
+	    System.out.println("Root:" + x.root + " Deleting:"+ i);
+	    x.remove(i);
+	}
+	assertEquals(1, x.size());
+	assertEquals(0, x.root.rank);
+	
+	x.remove(5);
     }
     
     @Test
@@ -359,5 +413,25 @@ public class WAVLTreeMapTest {
 	assertEquals(1, x.root.right.right.rank);
 	assertEquals(0, x.root.right.left.rank);
 	assertEquals(2, x.root.right.rank);
+    }
+    
+    @Test
+    public void testDeleteManyWAVL() {
+	x = new WAVLTreeMap<>(true);
+	Integer [] a = {477,1193,2130,398,1393,946,422,1381,1767,830,570,1085,741,598,1658,1801,487};//,1921,1918,258,135,975,1870};
+	for (int i=0; i < a.length; i++) {
+	    System.out.print(a[i] + ",");
+	    x.put(a[i], a[i]);
+	}
+	System.out.println();
+	for (int i=a.length-1; i > 0; i--) {
+	    System.out.println("Deleting:" + i + " value:" + a[i]);
+	    x.remove(a[i], a[i]);
+	    
+	}
+	assertEquals(477, (int) x.root.value);
+	assertEquals(0, x.root.rank);
+	assertNull(x.root.left);
+	assertNull(x.root.right);
     }
 }
