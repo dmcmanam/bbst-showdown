@@ -18,22 +18,21 @@ import java.util.Spliterator;
  * Because AVL trees enforce stricter balance requirements than red-black trees,
  * performance of AVL trees is better than red-black in situations where
  * red-black trees become unbalanced.
- * 
+ * <p>
+ * This code can replace Java's standard TreeMap implementation for improved performance.
+ * <p>
+ * Each node in this implementation contains one extra byte for balance factor which holds values of -1,0,1
+ * after each insert/delete by the original AVL tree definition.
  * <p>
  * This implementation provides guaranteed log(n) time cost for the
  * {@code containsKey}, {@code get}, {@code put} and {@code remove} operations.
- * 
- * <p>
- * The starting point for this code was the red-black implementation of TreeMap from the OpenJDK:<BR>
- * http://hg.openjdk.java.net/jdk8/jdk8/jdk/file/46c727d6ecc2/src/share/classes/java/util/TreeMap.java <BR>
- * with the <i>fixAfterInsertion</i> and <i> fixAfterDeletion</i> methods replaced.
  * 
  * @author David McManamon
  *
  * @param <K> the type of keys maintained by this map
  * @param <V> the type of mapped values
  */
-public class TreeMapAVL<K, V> extends AbstractMap<K, V> {
+public class AVLTreeMap<K, V> extends AbstractMap<K, V> {
 
     protected transient Entry<K, V> root = null;
 
@@ -68,7 +67,7 @@ public class TreeMapAVL<K, V> extends AbstractMap<K, V> {
      * {@code put(Object key, Object value)} call will throw a
      * {@code ClassCastException}.
      */
-    public TreeMapAVL() {
+    public AVLTreeMap() {
 	comparator = null;
     }
 
@@ -88,7 +87,7 @@ public class TreeMapAVL<K, V> extends AbstractMap<K, V> {
      * @throws NullPointerException
      *             if the specified map is null
      */
-    public TreeMapAVL(Map<? extends K, ? extends V> m) {
+    public AVLTreeMap(Map<? extends K, ? extends V> m) {
 	comparator = null;
 	putAll(m);
     }
@@ -697,11 +696,11 @@ public class TreeMapAVL<K, V> extends AbstractMap<K, V> {
 	}
 
 	public int size() {
-	    return TreeMapAVL.this.size();
+	    return AVLTreeMap.this.size();
 	}
 
 	public void clear() {
-	    TreeMapAVL.this.clear();
+	    AVLTreeMap.this.clear();
 	}
 
 	public Spliterator<Map.Entry<K, V>> spliterator() {
@@ -883,14 +882,14 @@ public class TreeMapAVL<K, V> extends AbstractMap<K, V> {
     /**
      * Return SimpleImmutableEntry for entry, or null if null
      */
-    static <K, V> Map.Entry<K, V> exportEntry(TreeMapAVL.Entry<K, V> e) {
+    static <K, V> Map.Entry<K, V> exportEntry(AVLTreeMap.Entry<K, V> e) {
 	return (e == null) ? null : new AbstractMap.SimpleImmutableEntry<>(e);
     }
 
     /**
      * Return key for entry, or null if null
      */
-    static <K, V> K keyOrNull(TreeMapAVL.Entry<K, V> e) {
+    static <K, V> K keyOrNull(AVLTreeMap.Entry<K, V> e) {
 	return (e == null) ? null : e.key;
     }
 

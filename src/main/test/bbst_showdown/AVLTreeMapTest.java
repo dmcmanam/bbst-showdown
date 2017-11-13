@@ -7,9 +7,9 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 
-public class TreeMapAVLTest {
+public class AVLTreeMapTest {
 
-    TreeMapAVL<Integer, Integer> x = new TreeMapAVL<>();
+    AVLTreeMap<Integer, Integer> x = new AVLTreeMap<>();
     
     @Before
     public void setup(){

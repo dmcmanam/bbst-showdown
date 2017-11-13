@@ -5,9 +5,9 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 
-public class TreeMapRAVLTest {
+public class WAVLTreeMapTest {
     
-    TreeMapRAVL<Integer, Integer> x = new TreeMapRAVL<>(true);
+    WAVLTreeMap<Integer, Integer> x = new WAVLTreeMap<>(true);
     
     @Before
     public void setup(){

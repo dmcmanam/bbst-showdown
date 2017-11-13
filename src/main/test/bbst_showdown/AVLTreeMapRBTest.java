@@ -6,8 +6,8 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 
-public class TreeMapAVLRBTest {
-    TreeMapAVLRB<Integer, Integer> x = new TreeMapAVLRB<>();
+public class AVLTreeMapRBTest {
+    AVLTreeMapRB<Integer, Integer> x = new AVLTreeMapRB<>();
     
     @Before
     public void setup(){
@@ -63,8 +63,8 @@ public class TreeMapAVLRBTest {
 	x.put(3, 3);
 
 	assertEquals(1, x.rotations);
-	assertEquals(TreeMapAVLRB.ONE, x.root.right.deltaR);
-	assertEquals(TreeMapAVLRB.ONE, x.root.left.deltaR);
+	assertEquals(AVLTreeMapRB.ONE, x.root.right.deltaR);
+	assertEquals(AVLTreeMapRB.ONE, x.root.left.deltaR);
 	assertEquals(2, (int) x.root.value);
     }
 
@@ -86,9 +86,9 @@ public class TreeMapAVLRBTest {
 	x.put(4, 4);
 	x.put(5, 5);
 
-	assertEquals(TreeMapAVLRB.TWO, x.root.left.deltaR);
-	assertEquals(TreeMapAVLRB.ONE, x.root.right.left.deltaR);
-	assertEquals(TreeMapAVLRB.ONE, x.root.right.deltaR);
+	assertEquals(AVLTreeMapRB.TWO, x.root.left.deltaR);
+	assertEquals(AVLTreeMapRB.ONE, x.root.right.left.deltaR);
+	assertEquals(AVLTreeMapRB.ONE, x.root.right.deltaR);
 	assertEquals(2, (int) x.root.value);
 	assertEquals(2, x.rotations);
     }
@@ -113,16 +113,16 @@ public class TreeMapAVLRBTest {
 	x.put(5, 5);
 	assertEquals(5, (int) x.root.right.right.value);
 	System.out.println("Inserting 6");
-	assertEquals(TreeMapAVLRB.TWO, x.root.left.deltaR);
+	assertEquals(AVLTreeMapRB.TWO, x.root.left.deltaR);
 	x.put(6, 6);
 
 	assertEquals(3, x.rotations);
 	assertEquals(4, (int) x.root.value);
-	assertEquals(TreeMapAVLRB.ONE, x.root.right.deltaR);
-	assertEquals(TreeMapAVLRB.ONE, x.root.right.right.deltaR);
-	assertEquals(TreeMapAVLRB.ONE, x.root.left.deltaR);
-	assertEquals(TreeMapAVLRB.ONE, x.root.left.left.deltaR);
-	assertEquals(TreeMapAVLRB.ONE, x.root.left.right.deltaR);
+	assertEquals(AVLTreeMapRB.ONE, x.root.right.deltaR);
+	assertEquals(AVLTreeMapRB.ONE, x.root.right.right.deltaR);
+	assertEquals(AVLTreeMapRB.ONE, x.root.left.deltaR);
+	assertEquals(AVLTreeMapRB.ONE, x.root.left.left.deltaR);
+	assertEquals(AVLTreeMapRB.ONE, x.root.left.right.deltaR);
     }
 
     @Test
@@ -133,8 +133,8 @@ public class TreeMapAVLRBTest {
 
 	assertEquals(2, x.rotations);
 	assertEquals(2, (int) x.root.value);
-	assertEquals(TreeMapAVLRB.ONE, x.root.right.deltaR);
-	assertEquals(TreeMapAVLRB.ONE, x.root.left.deltaR);
+	assertEquals(AVLTreeMapRB.ONE, x.root.right.deltaR);
+	assertEquals(AVLTreeMapRB.ONE, x.root.left.deltaR);
     }
 
     @Test
@@ -145,8 +145,8 @@ public class TreeMapAVLRBTest {
 
 	assertEquals(2, x.rotations);
 	assertEquals(4, (int) x.root.value);
-	assertEquals(TreeMapAVLRB.ONE, x.root.right.deltaR);
-	assertEquals(TreeMapAVLRB.ONE, x.root.left.deltaR);
+	assertEquals(AVLTreeMapRB.ONE, x.root.right.deltaR);
+	assertEquals(AVLTreeMapRB.ONE, x.root.left.deltaR);
     }
     
     @Test
@@ -159,7 +159,7 @@ public class TreeMapAVLRBTest {
 
 	assertEquals(2, x.rotations);
 	assertEquals(1921, (int) x.root.value);
-	assertEquals(TreeMapAVLRB.TWO, x.root.right.deltaR);
+	assertEquals(AVLTreeMapRB.TWO, x.root.right.deltaR);
     }
 
 /*
@@ -194,9 +194,9 @@ public class TreeMapAVLRBTest {
 	x.put(5, 5); x.put(15, 15); x.put(30, 30); x.put(80, 80);
 	x.put(0, 0); x.put(7, 7); x.put(12, 12); x.put(60, 60); x.put(160, 160);
 	x.put(8, 8);
-	assertEquals(TreeMapAVLRB.TWO, x.root.right.deltaR);
+	assertEquals(AVLTreeMapRB.TWO, x.root.right.deltaR);
 	x.put(100, 100);
-	assertEquals(TreeMapAVLRB.TWO, x.root.right.deltaR);
+	assertEquals(AVLTreeMapRB.TWO, x.root.right.deltaR);
     }
     
     @Test
@@ -210,7 +210,7 @@ public class TreeMapAVLRBTest {
 	x.put(1918, 1918);
 	
 	assertEquals(1801, (int) x.root.value);
-	assertEquals(TreeMapAVLRB.ONE, x.root.right.right.deltaR);
+	assertEquals(AVLTreeMapRB.ONE, x.root.right.right.deltaR);
     }
     
     @Test
@@ -223,9 +223,9 @@ public class TreeMapAVLRBTest {
 
 	assertEquals(2, x.rotations);
 	assertEquals(4, (int) x.root.value);
-	assertEquals(TreeMapAVLRB.TWO, x.root.right.deltaR);
-	assertEquals(TreeMapAVLRB.ONE, x.root.left.left.deltaR);
-	assertEquals(TreeMapAVLRB.ONE, x.root.left.deltaR);
+	assertEquals(AVLTreeMapRB.TWO, x.root.right.deltaR);
+	assertEquals(AVLTreeMapRB.ONE, x.root.left.left.deltaR);
+	assertEquals(AVLTreeMapRB.ONE, x.root.left.deltaR);
     }
     
     @Test

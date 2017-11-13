@@ -3,13 +3,13 @@ package performanceTests;
 import java.io.FileNotFoundException;
 import java.util.*;
 
-import bbst_showdown.TreeMapAVL;
-import bbst_showdown.TreeMapAVLRB;
+import bbst_showdown.AVLTreeMap;
+import bbst_showdown.AVLTreeMapRB;
 import bbst_showdown.TreeMapAVLRec;
 import bbst_showdown.TreeMapAVLStack;
 import bbst_showdown.TreeMapBST;
 import bbst_showdown.TreeMapRedBlack;
-import bbst_showdown.TreeMapRAVL;
+import bbst_showdown.WAVLTreeMap;
 
 /**
  * Prints a comparison of tree performance. 
@@ -20,21 +20,22 @@ public class Standoff {
 
     public static void main(String[] args) throws FileNotFoundException {
 	Map<Integer, Integer> redBlack = new TreeMapRedBlack<>();
-	Map<Integer, Integer> avl = new TreeMapAVL<>();
-	Map<Integer, Integer> avlRB = new TreeMapAVLRB<>();
-	Map<Integer, Integer> ravl = new TreeMapRAVL<>(false);
-	Map<Integer, Integer> avlNoParent = new TreeMapAVLStack<>();
+	Map<Integer, Integer> avl = new AVLTreeMap<>();
+	Map<Integer, Integer> avlRB = new AVLTreeMapRB<>();
+	Map<Integer, Integer> wavl = new WAVLTreeMap<>(false);
 	Map<Integer, Integer> bst = new TreeMapBST<>();
-	Map<Integer, Integer> avlRec = new TreeMapAVLRec<>();
+//	Map<Integer, Integer> avlNoParent = new TreeMapAVLStack<>();
+//	Map<Integer, Integer> avlRec = new TreeMapAVLRec<>();
 
 	List<Map<Integer, Integer>> maps = new ArrayList<Map<Integer, Integer>>();
 	maps.add(redBlack); // 0=red-black
 	maps.add(avl);      // 1=avl
-	maps.add(ravl);	    // 2=ravl
+	maps.add(avlRB);    // 2=avl rb
+	maps.add(wavl);	    // 3=wavl
 	maps.add(bst);      // 4-bst (no rotations)
 	
 	// TODO update the integer to choose a different tree implementation
-	Map<Integer, Integer> treeMap = maps.get(2);
+	Map<Integer, Integer> treeMap = maps.get(3);
 	
 	int mean;
 	Integer [] randomInts = readRandomInts();

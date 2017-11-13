@@ -2,9 +2,9 @@ package performanceTests;
 
 import java.util.Map;
 
-import bbst_showdown.TreeMapAVL;
+import bbst_showdown.AVLTreeMap;
 import bbst_showdown.TreeMapRedBlack;
-import bbst_showdown.TreeMapRAVL;
+import bbst_showdown.WAVLTreeMap;
 
 public class CountRotations {
     public static void main(String [] args) {
@@ -19,8 +19,8 @@ public class CountRotations {
 	
 	System.out.println("Results for inserting integer clusters in sequences of 16 and total size: " + groupedRandomNumbers.length + " -");
 	
-	TreeMapRAVL<Integer, Integer> ravl = new TreeMapRAVL<>();
-	TreeMapAVL<Integer, Integer> avl = new TreeMapAVL<>();
+	WAVLTreeMap<Integer, Integer> ravl = new WAVLTreeMap<>();
+	AVLTreeMap<Integer, Integer> avl = new AVLTreeMap<>();
 	TreeMapRedBlack<Integer, Integer> redBlack = new TreeMapRedBlack<>();
 	
 	insert(avl, groupedRandomNumbers);

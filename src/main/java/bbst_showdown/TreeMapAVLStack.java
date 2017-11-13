@@ -11,7 +11,7 @@ import java.util.Set;
 /**
  * An AVL tree {@link NavigableMap} implementation without parent pointers, 
  * balance factors & non-recursive insert and delete.  Re-tracing after update
- * operations is done via a stack.  This version is incomplete.
+ * operations is done via a stack.  This version is incomplete, performance did not appear promising.
  * 
  * @author David McManamon
  *

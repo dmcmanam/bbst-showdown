@@ -1,30 +1,32 @@
 package bbst_showdown;
 
 import java.util.AbstractMap;
-import java.util.AbstractSet;
 import java.util.Comparator;
-import java.util.ConcurrentModificationException;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.Spliterator;
 
 
 /**
- * Both an AVL and relaxed AVL (RAVL) tree implementation with rank, parent references and bottom-up rebalancing.
+ * A rank-balanced AVL tree implementation with only one extra bit per node -
+ * (delta rank is one or two by definition of the rank-balanced AVL tree).
  * 
- * A normal AVL tree becomes a RAVL tree when delete rebalancing is turned off, rebalancing is then only performed for insertions.
+ * This code is based on the paper "Rank Balanced Trees".
  * 
- * The RAVL tree is described in the 2016 paper "Deletion Without Rebalancing in Binary Search Trees"
- * http://sidsen.azurewebsites.net//
+ * At the time I wrote it I found no other similar implementations.
+ * 
+ * TODO
+ * I didn't code the delete method yet.  If you need it email me, minimum 1 day of work needed.
  * 
  * @author David McManamon
  *
  * @param <K> the type of keys maintained by this map
  * @param <V> the type of mapped values
  */
-public class TreeMapRAVL<K, V> extends AbstractMap<K, V> {
+public class AVLTreeMapRB<K, V> extends AbstractMap<K, V> {
+    // every node except the root must have a delta r of 1 or 2
+    protected static final boolean ONE = true;
+    protected static final boolean TWO = false;
     
     protected transient Entry<K, V> root = null;
 
@@ -48,12 +50,6 @@ public class TreeMapRAVL<K, V> extends AbstractMap<K, V> {
     
     protected transient int rotations = 0;
     
-    protected boolean deleteRebalance = false;
-    
-    
-    public TreeMapRAVL() {
-	this.comparator = null;
-    }
     /**
      * Constructs a new, empty tree map, using the natural ordering of its
      * keys.  All keys inserted into the map must implement the {@link
@@ -66,9 +62,8 @@ public class TreeMapRAVL<K, V> extends AbstractMap<K, V> {
      * {@code put(Object key, Object value)} call will throw a
      * {@code ClassCastException}.
      */
-    public TreeMapRAVL(boolean deleteRebalance) {
-	this.deleteRebalance = deleteRebalance;
-	this.comparator = null;
+    public AVLTreeMapRB() {
+	comparator = null;
     }
     
     /**
@@ -85,7 +80,7 @@ public class TreeMapRAVL<K, V> extends AbstractMap<K, V> {
      *         or are not mutually comparable
      * @throws NullPointerException if the specified map is null
      */
-    public TreeMapRAVL(Map<? extends K, ? extends V> m) {
+    public AVLTreeMapRB(Map<? extends K, ? extends V> m) {
         comparator = null;
         putAll(m);
     }
@@ -105,7 +100,7 @@ public class TreeMapRAVL<K, V> extends AbstractMap<K, V> {
     }
 
     public String toString() {
-	return "RAVL tree of size: " + size + ", height: " + treeHeight() + ", rotations " + rotations;
+	return "Rank balanced AVL tree of size: " + size + ", height: " + treeHeight() + ", rotations " + rotations;
     }
     
     /**
@@ -155,20 +150,16 @@ public class TreeMapRAVL<K, V> extends AbstractMap<K, V> {
         Entry<K,V> left = null;
         Entry<K,V> right = null;
         Entry<K,V> parent = null;
-        byte rank = 0;
+        boolean deltaR = ONE;
 
         /**
          * Make a new cell with given key, value, and parent, and with
-         * {@code null} child links, and BLACK color.
+         * {@code null} child links, and delta r of 1
          */
         Entry(K key, V value, Entry<K,V> parent) {
             this.key = key;
             this.value = value;
             this.parent = parent;
-        }
-        
-        Entry() {
-            rank = -1;
         }
 
         /**
@@ -217,7 +208,7 @@ public class TreeMapRAVL<K, V> extends AbstractMap<K, V> {
         }
 
         public String toString() {
-            return key + "=" + value + "," + rank;
+            return key + "=" + value + "," + deltaR;
         }
     }
     
@@ -340,92 +331,87 @@ public class TreeMapRAVL<K, V> extends AbstractMap<K, V> {
 	}
 
 	Entry<K, V> e = new Entry<>(key, value, parent);
+	Entry<K, V> sibling;
 	if (cmp < 0) {
 	    parent.left = e;
+	    sibling = parent.right;
 	} else {
 	    parent.right = e;
+	    sibling = parent.left;
 	}
 
-	if (parent.rank == 0) {
-	    parent.rank++;
+	if (sibling == null)
 	    fixAfterInsertion(parent);
-	}
 
 	size++;
 	modCount++;
 	return null;
     }
     
-    public void inOrderTraversal(Entry<K, V> x) {
-	if (x == null)
-	    return;
-	inOrderTraversal(x.left);
-	System.out.println(x.value + ", " + x.rank);
-	inOrderTraversal(x.right);
-    }
-    
     /**
-- If the path of incremented ranks reaches the root of the tree stop.
-- If the path of incremented ranks reaches a node whose parent's rank previously differed by two and after incrementing now differ by one stop.
-- If the procedure increases the rank of a node x, so that it becomes equal to the rank of the parent y of x, 
-  but the other child of y has a rank that is smaller by two (so that the rank of y cannot be increased) 
-  then again the rebalancing procedure stops after performing rotations necessary.
-In other words:
-After insertion rank difference is 1,2 or 3 - 
-check these three cases stopping after any rotations, reaching the root or when rank difference was 2 before the insertion.
+If the path of incremented ranks reaches the root of the tree, then the rebalancing procedure stops.
+If the path of incremented ranks reaches a node whose parent's rank previously differed by two, the rebalancing procedure stops.
+If the procedure increases the rank of a node x, so that it becomes equal to the rank of the parent y of x, 
+	but the other child of y has a rank that is smaller by two (so that the rank of y cannot be increased) 
+	then again the rebalancing procedure stops after performing rotations necessary.
      */
     private void fixAfterInsertion(Entry<K, V> x) {
-	for (Entry<K, V> parent = x.parent; 
-		parent != null && x.rank + 1 != parent.rank; x.rank++) {
-	    if (parent.left == x) { // new node was added on the left
-		if (needToRotateRight(parent)) {
-		    if (x.left == null || x.rank >= x.left.rank + 2) {
-			x.rank--; 
-			x.right.rank++;
-			rotateLeft(x);
+	while (x.deltaR != TWO && x.parent != null) { 
+	    Entry<K, V> p = x.parent;
+	    if (p.left == x) { // node was added on left so check if left side is unbalanced
+		Entry<K, V> sibling = p.right;
+		if (sibling == null || sibling.deltaR == TWO) { // need to rebalance
+		    if (sibling != null)
+			sibling.deltaR = ONE;
+		    
+		    if (x.right != null) {
+			 if(x.right.deltaR == ONE) {
+			     if (x.left != null) x.left.deltaR = ONE;
+			     rotateLeft(x);
+			 } else
+			     x.right.deltaR = ONE;
+		    } 
+		    
+		    if (p.deltaR == TWO) {  // maintain delta 2 at parent
+			p.deltaR = ONE;
+			p.left.deltaR = TWO;
 		    }
-		    parent.rank--;
-		    rotateRight(parent);
-		    break;
-		}
-	    } else {
-		if (needToRotateLeft(parent)) {
-		    if (x.right == null || x.rank >= x.right.rank + 2) {
-			x.rank--; 
-			x.left.rank++;
-			rotateRight(x);
+		    rotateRight(p);
+		    return;
+		} else if (sibling.deltaR == ONE) {
+		    sibling.deltaR = TWO;
+		} 
+	    } else { // checking right side heavy
+		Entry<K, V> sibling = p.left;
+		if (sibling == null || sibling.deltaR == TWO) { // need to rebalance
+		    if (sibling != null)
+			sibling.deltaR = ONE;
+		    
+		    if (x.left != null) {
+			if (x.left.deltaR == ONE) {
+			    if (x.right != null) x.right.deltaR = ONE;
+			    rotateRight(x);
+			} else
+			    x.left.deltaR = ONE;
 		    }
-		    parent.rank--;
-		    rotateLeft(parent);
-		    break;
-		}
+		    
+		    if (p.deltaR == TWO) {  // maintain delta 2 at parent
+			p.deltaR = ONE;
+			p.right.deltaR = TWO;
+		    }
+		    rotateLeft(p);
+		    return;
+		} else if (sibling.deltaR == ONE) {
+		    sibling.deltaR = TWO;
+		} 
 	    }
-	    x = parent;
-	    parent = x.parent;
+	    
+	    x = x.parent;
 	}
+	if (x.deltaR == TWO)
+	    x.deltaR=ONE;
     }
 
-    // check if sibling node has a rank difference of 2 or greater
-    private boolean needToRotateLeft(Entry<K, V> p) {
-	if (p.left == null) { // rank of sibling is -1
-	    if (p.rank == 1)
-		return true;
-	    return false;
-	} else if (p.rank >= p.left.rank + 2)
-	    return true;
-	return false;
-    }
-
-    // check if sibling node has a rank difference of 2 or greater (RAVL)
-    private boolean needToRotateRight(Entry<K, V> p) {
-	if (p.right == null) { // rank of sibling is -1
-	    if (p.rank == 1)
-		return true;
-	    return false;
-	} else if (p.rank >= p.right.rank + 2)
-	    return true;
-	return false;
-    }
     
     /** From CLR */
     private void rotateLeft(Entry<K, V> p) {
@@ -503,31 +489,35 @@ check these three cases stopping after any rotations, reaching the root or when 
             p = s;
         } // p has 2 children
 
+        // Start fixup at replacement node, if it exists.
         Entry<K,V> replacement = (p.left != null ? p.left : p.right);
+
         if (replacement != null) {
             // Link replacement to parent
 	    replacement.parent = p.parent;
-	    Entry<K, V> sibling = null;
+	    Entry<K, V> mirror = null;
 	    if (p.parent == null) {
 		root = replacement;
 		return;
 	    } else if (p == p.parent.left) {
 		p.parent.left = replacement;
-		sibling = p.parent.right;
+		mirror = p.parent.right;
 	    } else {
 		p.parent.right = replacement;
-		sibling = p.parent.left;
+		mirror = p.parent.left;
 	    }
 
 	    // Null out links so they are OK to use by fixAfterDeletion.
 	    p.left = p.right = p.parent = null;
-	    if (deleteRebalance)
-		fixAfterDeletion(replacement.parent, sibling, replacement);
+	    //TODO
+	    fixAfterDeletion(replacement.parent, mirror);
         } else if (p.parent == null) { // return if we are the only node.
             root = null;
         } else { //  No children. Use self as phantom replacement and unlink.
+            // TODO check if null check necessary?
             Entry<K, V> fixPoint = p.parent;
-            Entry<K, V> sibling = null;
+            @SuppressWarnings("unused")
+	    Entry<K, V> sibling = null;
 
 	    if (p == p.parent.left) {
 		p.parent.left = null;
@@ -537,69 +527,16 @@ check these three cases stopping after any rotations, reaching the root or when 
 		sibling = fixPoint.left;
 	    }
 	    p.parent = null;
-	    p.rank--;
-	    if (deleteRebalance)
-		fixAfterDeletion(fixPoint, sibling, p);
+
+	    // TODO
+//	    if (mirror == null || (fixPoint.rank - p.rank >= 2) || (fixPoint.rank - mirror.rank) != 1 ) {
+		fixAfterDeletion(fixPoint, null);
+//	    }
         }
     }
     
-    private byte rank(final Entry<K,V> node) {
-	return (node == null) ? -1 : node.rank;
-    }
-
-    @SuppressWarnings("rawtypes")
-    private final Entry EMPTY_NODE = new Entry();
-    
-    /*
-     * delete re-tracing via balance factor
-     */
-    private void fixAfterDeletion(Entry<K, V> parent, Entry<K, V> sibling, Entry<K, V> node) {
-	if (sibling == null)  // remove sibling null check inside loop by testing once here
-	    sibling = EMPTY_NODE;
-	int balance = sibling.rank - node.rank;
-	
-	while (balance != 1) { // balance == 1 means prior to delete parent was balanced, break;
-	    if (balance == 0) {// side of delete was taller, decrement and continue
-		parent.rank--;
-	    } else if (sibling.parent.left == sibling) {
-		parent.rank -= 2;
-		int siblingBalance = rank(sibling.right) - rank(sibling.left);
-		if (siblingBalance == 0) { // parent height unchanged after rotate so break
-		    sibling.rank++;
-		    parent.rank++;
-		    rotateRight(parent);
-		    break;
-		} else if (siblingBalance > 0) {
-		    sibling.right.rank++;
-		    sibling.rank--;
-		    rotateLeft(sibling);
-		}
-		rotateRight(parent);
-		parent = parent.parent;
-	    } else { // delete on left
-		parent.rank -= 2;
-		int siblingBalance = rank(sibling.right) - rank(sibling.left);
-		if (siblingBalance == 0) { // parent height unchanged after rotate so break
-		    sibling.rank++;
-		    parent.rank++;
-		    rotateLeft(parent);
-		    break;
-		} else if (siblingBalance < 0) {
-		    sibling.left.rank++;
-		    sibling.rank--;
-		    rotateRight(sibling);
-		}
-		rotateLeft(parent);
-		parent = parent.parent;
-	    }
-
-	    if (parent.parent == null)
-		return;
-	    node = parent;
-	    parent = parent.parent;
-	    sibling = (parent.left == node) ? parent.right : parent.left;
-	    balance = sibling.rank - node.rank;
-	}
+    private void fixAfterDeletion(Entry<K, V> p, Entry<K,V> mirror) {
+	throw new RuntimeException();
     }
     
     /**
@@ -709,135 +646,30 @@ check these three cases stopping after any rotations, reaching the root or when 
         }
     }
 
-    /**
-     * Returns a {@link Set} view of the mappings contained in this map.
-     *
-     * <p>
-     * The set's iterator returns the entries in ascending key order. The sets's
-     * spliterator is <em><a href="Spliterator.html#binding">late-binding</a></em>,
-     * <em>fail-fast</em>, and additionally reports {@link Spliterator#SORTED} and
-     * {@link Spliterator#ORDERED} with an encounter order that is ascending key
-     * order.
-     *
-     * <p>
-     * The set is backed by the map, so changes to the map are reflected in the set,
-     * and vice-versa. If the map is modified while an iteration over the set is in
-     * progress (except through the iterator's own {@code remove} operation, or
-     * through the {@code setValue} operation on a map entry returned by the
-     * iterator) the results of the iteration are undefined. The set supports
-     * element removal, which removes the corresponding mapping from the map, via
-     * the {@code Iterator.remove}, {@code Set.remove}, {@code removeAll},
-     * {@code retainAll} and {@code clear} operations. It does not support the
-     * {@code add} or {@code addAll} operations.
-     */
-    public Set<Map.Entry<K, V>> entrySet() {
-	EntrySet es = entrySet;
-	return (es != null) ? es : (entrySet = new EntrySet());
+    @Override
+    public Set<java.util.Map.Entry<K, V>> entrySet() {
+	// TODO Auto-generated method stub
+	return null;
     }
-
-    private transient EntrySet entrySet = null;
-
-    class EntrySet extends AbstractSet<Map.Entry<K, V>> {
-	public Iterator<Map.Entry<K, V>> iterator() {
-	    return new EntryIterator(getFirstEntry());
-	}
-
-	public boolean contains(Object o) {
-	    if (!(o instanceof Map.Entry))
-		return false;
-	    Map.Entry<?, ?> entry = (Map.Entry<?, ?>) o;
-	    Object value = entry.getValue();
-	    Entry<K, V> p = getEntry(entry.getKey());
-	    return p != null && valEquals(p.getValue(), value);
-	}
-
-	public boolean remove(Object o) {
-	    if (!(o instanceof Map.Entry))
-		return false;
-	    Map.Entry<?, ?> entry = (Map.Entry<?, ?>) o;
-	    Object value = entry.getValue();
-	    Entry<K, V> p = getEntry(entry.getKey());
-	    if (p != null && valEquals(p.getValue(), value)) {
-		deleteEntry(p);
-		return true;
-	    }
-	    return false;
-	}
-
-	public int size() {
-	    return TreeMapRAVL.this.size();
-	}
-
-	public void clear() {
-	    TreeMapRAVL.this.clear();
-	}
-
-	public Spliterator<Map.Entry<K, V>> spliterator() {
-	    return null;
-	}
+    
+    public void inOrderTraversal(Entry<K, V> x) {
+	if (x == null)
+	    return;
+	inOrderTraversal(x.left);
+	System.out.println(x.value + ", " + x.deltaR);
+	inOrderTraversal(x.right);
     }
+    
+    public boolean identicalTrees(Entry<K, V> a, AVLTreeMap.Entry<K, V> b) {
+	/* 1. both empty */
+	if (a == null && b == null)
+	    return true;
 
-    /**
-     * Base class for TreeMap Iterators
-     */
-    abstract class PrivateEntryIterator<T> implements Iterator<T> {
-	Entry<K, V> next;
-	Entry<K, V> lastReturned;
-	int expectedModCount;
+	/* 2. both non-empty -> compare them */
+	if (a != null && b != null)
+	    return (a.value == b.value && identicalTrees(a.left, b.left) && identicalTrees(a.right, b.right));
 
-	PrivateEntryIterator(Entry<K, V> first) {
-	    expectedModCount = modCount;
-	    lastReturned = null;
-	    next = first;
-	}
-
-	public final boolean hasNext() {
-	    return next != null;
-	}
-
-	final Entry<K, V> nextEntry() {
-	    Entry<K, V> e = next;
-	    if (e == null)
-		throw new NoSuchElementException();
-	    if (modCount != expectedModCount)
-		throw new ConcurrentModificationException();
-	    next = successor(e);
-	    lastReturned = e;
-	    return e;
-	}
-
-	final Entry<K, V> prevEntry() {
-	    Entry<K, V> e = next;
-	    if (e == null)
-		throw new NoSuchElementException();
-	    if (modCount != expectedModCount)
-		throw new ConcurrentModificationException();
-	    next = predecessor(e);
-	    lastReturned = e;
-	    return e;
-	}
-
-	public void remove() {
-	    if (lastReturned == null)
-		throw new IllegalStateException();
-	    if (modCount != expectedModCount)
-		throw new ConcurrentModificationException();
-	    // deleted entries are replaced by their successors
-	    if (lastReturned.left != null && lastReturned.right != null)
-		next = lastReturned;
-	    deleteEntry(lastReturned);
-	    expectedModCount = modCount;
-	    lastReturned = null;
-	}
-    }
-
-    final class EntryIterator extends PrivateEntryIterator<Map.Entry<K, V>> {
-	EntryIterator(Entry<K, V> first) {
-	    super(first);
-	}
-
-	public Map.Entry<K, V> next() {
-	    return nextEntry();
-	}
+	/* 3. one empty, one not -> false */
+	return false;
     }
 }

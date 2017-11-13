@@ -12,7 +12,7 @@ import java.util.Comparator;
  * @param <K> the type of keys maintained by this map
  * @param <V> the type of mapped values
  */
-public class TreeMapAVLRec<K, V> extends TreeMapAVL<K, V> {
+public class TreeMapAVLRec<K, V> extends AVLTreeMap<K, V> {
 
     public TreeMapAVLRec() {
 	super();
