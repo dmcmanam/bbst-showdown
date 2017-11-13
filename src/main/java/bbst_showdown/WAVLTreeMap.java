@@ -565,34 +565,34 @@ check these three cases stopping after any rotations, reaching the root or when 
 		if (siblingBalance > 0) {
 		    sibling.right.rank++;
 		    sibling.rank--;
-		    rotateLeft(sibling);
 		    parent.rank -= 2;
+		    rotateLeft(sibling);
 		} else if (siblingBalance == 0) {
-		    parent.rank--;
 		    sibling.rank++;
+		    parent.rank--;
 		} else {
 		    parent.rank -= 2;
-		    sibling.rank++;
 		}
-		
 		rotateRight(parent);
+		if (sibling.parent != null && sibling.parent.rank > sibling.rank + 2)
+		    sibling.rank++;
 		break;
 	    } else { // delete on left
 		int siblingBalance = rank(sibling.right) - rank(sibling.left);
 		if (siblingBalance < 0) {
 		    sibling.left.rank++;
 		    sibling.rank--;
-		    rotateRight(sibling);
 		    parent.rank -= 2;
+		    rotateRight(sibling);
 		} else if (siblingBalance == 0) {
-		    parent.rank--;
 		    sibling.rank++;
+		    parent.rank--;
 		} else {
 		    parent.rank -= 2;
-		    sibling.rank++;
 		}
-		
 		rotateLeft(parent);
+		if (sibling.parent != null && sibling.parent.rank > sibling.rank + 2)
+		    sibling.rank++;
 		break;
 	    }
 

@@ -261,6 +261,25 @@ public class WAVLTreeMapTest {
     }
     
     @Test
+    public void testDeleteOneRightRotationWAVL() {
+	x = new WAVLTreeMap<>(true);
+	x.put(10, 10);
+	x.put(8, 8); x.put(12, 12);
+	x.put(6, 6);
+	
+	x.remove(12);
+	/*
+	  8
+	6  10
+	 */
+	assertEquals(1, x.rotations);
+	assertEquals(1, x.root.rank);
+	assertEquals(0, x.root.right.rank);
+	assertEquals(0, x.root.left.rank);
+	assertEquals(8, (int) x.root.value);
+    }
+    
+    @Test
     public void testDeleteOneRightRotationSiblingBalanced() {
 	x.put(10, 10);
 	x.put(8, 8);x.put(12, 12);
@@ -418,7 +437,7 @@ public class WAVLTreeMapTest {
     @Test
     public void testDeleteManyWAVL() {
 	x = new WAVLTreeMap<>(true);
-	Integer [] a = {477,1193,2130,398,1393,946,422,1381,1767,830,570,1085,741,598,1658,1801,487};//,1921,1918,258,135,975,1870};
+	Integer [] a = {477,1193,2130,398,1393,946,422,1381,1767,830,570,1085,741,598,1658,1801,487,1921,1918,258,135,975,1870};
 	for (int i=0; i < a.length; i++) {
 	    System.out.print(a[i] + ",");
 	    x.put(a[i], a[i]);
@@ -427,6 +446,11 @@ public class WAVLTreeMapTest {
 	for (int i=a.length-1; i > 0; i--) {
 	    System.out.println("Deleting:" + i + " value:" + a[i]);
 	    x.remove(a[i], a[i]);
+	    if (i == 3) {
+		assertEquals(0, x.root.right.rank);
+		assertEquals(0, x.root.left.rank);
+		assertEquals(1, x.root.rank);
+	    }
 	    
 	}
 	assertEquals(477, (int) x.root.value);
