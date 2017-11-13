@@ -521,7 +521,7 @@ check these three cases stopping after any rotations, reaching the root or when 
 	    // Null out links so they are OK to use by fixAfterDeletion.
 	    p.left = p.right = p.parent = null;
 	    if (deleteWAVL)
-		fixAfterDeletionAVL(replacement.parent, sibling, replacement);
+		fixAfterDeletionWAVL(replacement.parent, sibling, replacement);
 	    else
 		fixAfterDeletionAVL(replacement.parent, sibling, replacement);
         } else if (p.parent == null) { // return if we are the only node.
@@ -540,7 +540,7 @@ check these three cases stopping after any rotations, reaching the root or when 
 	    p.parent = null;
 	    p.rank--;
 	    if (deleteWAVL)
-		fixAfterDeletionAVL(fixPoint, sibling, p);
+		fixAfterDeletionWAVL(fixPoint, sibling, p);
 	    else
 		fixAfterDeletionAVL(fixPoint, sibling, p);
         }
@@ -548,6 +548,57 @@ check these three cases stopping after any rotations, reaching the root or when 
     
     private byte rank(final Entry<K,V> node) {
 	return (node == null) ? -1 : node.rank;
+    }
+    
+    private void fixAfterDeletionWAVL(Entry<K, V> parent, Entry<K, V> sibling, Entry<K, V> node) {
+	int balance;
+	if (sibling == null)
+	    balance = -1 - node.rank;
+	else
+	    balance = sibling.rank - node.rank;
+	
+	while (balance != 1) { // balance == 1 means prior to delete parent was balanced, break;
+	    if (balance == 0) {// side of delete was taller, decrement and continue
+		parent.rank--;
+	    } else if (parent.left == sibling) {
+		int siblingBalance = rank(sibling.right) - rank(sibling.left);
+		if (siblingBalance > 0) {
+		    sibling.right.rank++;
+		    sibling.rank--;
+		    rotateLeft(sibling);
+		} 
+		if (siblingBalance == 0) {
+		    parent.rank--;
+		} else {
+		    parent.rank -= 2;
+		}
+		sibling.rank++;
+		rotateRight(parent);
+		break;
+	    } else { // delete on left
+		int siblingBalance = rank(sibling.right) - rank(sibling.left);
+		if (siblingBalance < 0) {
+		    sibling.left.rank++;
+		    sibling.rank--;
+		    rotateRight(sibling);
+		}
+		if (siblingBalance == 0) {
+		    parent.rank--;
+		} else {
+		    parent.rank -= 2;
+		}
+		sibling.rank++;
+		rotateLeft(parent);
+		break;
+	    }
+
+	    if (parent.parent == null)
+		return;
+	    node = parent;
+	    parent = parent.parent;
+	    sibling = (parent.left == node) ? parent.right : parent.left;
+	    balance = sibling.rank - node.rank;
+	}
     }
     
     /*

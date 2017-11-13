@@ -7,7 +7,7 @@ import org.junit.Test;
 
 public class WAVLTreeMapTest {
     
-    WAVLTreeMap<Integer, Integer> x = new WAVLTreeMap<>(true);
+    WAVLTreeMap<Integer, Integer> x = new WAVLTreeMap<>(false);
     
     @Before
     public void setup(){
@@ -317,5 +317,47 @@ public class WAVLTreeMapTest {
 	assertEquals(1, x.root.left.rank);
 	x.inOrderTraversal(x.root);
 	
+    }
+    
+    @Test
+    public void testDeleteFibonacciTreeWAVL() {
+	x = new WAVLTreeMap<>(true);
+	x.put(8, 8); // root
+	x.put(5, 5); x.put(11, 11);
+	// 3,7,10,12
+	x.put(3, 3); x.put(7, 7); x.put(10, 10); x.put(12, 12);
+	// 2,4,6,9
+	x.put(2, 2); x.put(4, 4); x.put(6, 6); x.put(9, 9);
+	x.put(1, 1);
+	
+	x.remove(12, 12);
+	System.out.println("Rotations after remove 12: " + x.rotations);
+	System.out.println("ROOT:"+ x.root);
+	assertEquals(1, x.rotations);
+	assertEquals(8, (int) x.root.value);
+	assertEquals(0, x.root.right.right.rank);
+	assertEquals(0, x.root.right.left.rank);
+	assertEquals(2, x.root.right.rank);
+    }
+    
+    @Test
+    public void testDeleteAlmostFibonacciTreeWAVL() {
+	x = new WAVLTreeMap<>(true);
+	x.put(8, 8); // root
+	x.put(5, 5); x.put(12, 12);
+	// 3,7,10,12
+	x.put(3, 3); x.put(7, 7); x.put(10, 10); x.put(13, 13);
+	// 2,4,6,9,11
+	x.put(2, 2); x.put(4, 4); x.put(6, 6); x.put(9, 9); x.put(11,11);
+	x.put(1, 1);
+	
+	x.remove(13, 13);
+	System.out.println("Rotations after remove 13: " + x.rotations);
+	System.out.println("ROOT:"+ x.root);
+	assertEquals(1, x.rotations);
+	assertEquals(8, (int) x.root.value);
+	assertEquals(1, x.root.right.right.rank);
+	assertEquals(0, x.root.right.left.rank);
+	assertEquals(2, x.root.right.rank);
     }
 }
