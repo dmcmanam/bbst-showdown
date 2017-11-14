@@ -273,7 +273,7 @@ public class WAVLTreeMapTest {
 	6  10
 	 */
 	assertEquals(1, x.rotations);
-	assertEquals(1, x.root.rank);
+	assertEquals(2, x.root.rank); // created 2,2 node, non-leaf
 	assertEquals(0, x.root.right.rank);
 	assertEquals(0, x.root.left.rank);
 	assertEquals(8, (int) x.root.value);
@@ -296,6 +296,30 @@ public class WAVLTreeMapTest {
 	assertEquals(2, x.root.rank);
 	assertEquals(6, (int) x.root.left.value);
 	assertEquals(1, x.root.right.rank);
+	assertEquals(0, x.root.left.rank);
+	assertEquals(8, (int) x.root.value);
+	assertEquals(1, x.rotations);
+    }
+    
+    @Test
+    public void testDeleteOneRightRotationSiblingBalancedWAVL() {
+	x = new WAVLTreeMap<>(true);
+	x.put(10, 10);
+	x.put(8, 8);x.put(12, 12);
+	x.put(6,6);x.put(9,9);
+	
+	assertEquals(0, x.rotations);
+	
+	x.remove(12);
+	/* after
+	 8
+       6   10
+          9
+	 */
+	assertEquals(2, x.root.rank);
+	assertEquals(6, (int) x.root.left.value);
+	assertEquals(1, x.root.right.rank);
+	assertEquals(0, x.root.right.left.rank);
 	assertEquals(0, x.root.left.rank);
 	assertEquals(8, (int) x.root.value);
 	assertEquals(1, x.rotations);
@@ -337,7 +361,7 @@ public class WAVLTreeMapTest {
 	
 	assertEquals(0, x.root.right.rank);
 	assertEquals(0, x.root.left.rank);
-	assertEquals(1, x.root.rank);
+	assertEquals(2, x.root.rank); // created 2,2 node
 	assertEquals(9, (int) x.root.value);
 	assertEquals(2, x.rotations);
     }
@@ -443,15 +467,10 @@ public class WAVLTreeMapTest {
 	    x.put(a[i], a[i]);
 	}
 	System.out.println();
+	
 	for (int i=a.length-1; i > 0; i--) {
 	    System.out.println("Deleting:" + i + " value:" + a[i]);
 	    x.remove(a[i], a[i]);
-	    if (i == 3) {
-		assertEquals(0, x.root.right.rank);
-		assertEquals(0, x.root.left.rank);
-		assertEquals(1, x.root.rank);
-	    }
-	    
 	}
 	assertEquals(477, (int) x.root.value);
 	assertEquals(0, x.root.rank);

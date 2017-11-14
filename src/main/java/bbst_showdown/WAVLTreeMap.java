@@ -347,7 +347,7 @@ public class WAVLTreeMap<K, V> extends AbstractMap<K, V> {
 
 	if (parent.rank == 0) {
 	    parent.rank++;
-	    fixAfterInsertion(parent);
+	    fixAfterInsert(parent);
 	}
 
 	size++;
@@ -373,7 +373,7 @@ In other words:
 After insertion rank difference is 1,2 or 3 - 
 check these three cases stopping after any rotations, reaching the root or when rank difference was 2 before the insertion.
      */
-    private void fixAfterInsertion(Entry<K, V> x) {
+    private void fixAfterInsert(Entry<K, V> x) {
 	for (Entry<K, V> parent = x.parent; 
 		parent != null && x.rank + 1 != parent.rank; x.rank++) {
 	    if (parent.left == x) { // new node was added on the left
@@ -521,9 +521,9 @@ check these three cases stopping after any rotations, reaching the root or when 
 	    // Null out links so they are OK to use by fixAfterDeletion.
 	    p.left = p.right = p.parent = null;
 	    if (deleteWAVL)
-		fixAfterDeletionWAVL(replacement.parent, sibling, replacement);
+		fixAfterDeleteWAVL(replacement.parent, sibling, replacement);
 	    else
-		fixAfterDeletionAVL(replacement.parent, sibling, replacement);
+		fixAfterDeleteAVL(replacement.parent, sibling, replacement);
         } else if (p.parent == null) { // return if we are the only node.
             root = null;
         } else { //  No children. Use self as phantom replacement and unlink.
@@ -540,9 +540,9 @@ check these three cases stopping after any rotations, reaching the root or when 
 	    p.parent = null;
 	    p.rank--;
 	    if (deleteWAVL)
-		fixAfterDeletionWAVL(fixPoint, sibling, p);
+		fixAfterDeleteWAVL(fixPoint, sibling, p);
 	    else
-		fixAfterDeletionAVL(fixPoint, sibling, p);
+		fixAfterDeleteAVL(fixPoint, sibling, p);
         }
     }
     
@@ -550,65 +550,78 @@ check these three cases stopping after any rotations, reaching the root or when 
 	return (node == null) ? -1 : node.rank;
     }
     
-    private void fixAfterDeletionWAVL(Entry<K, V> parent, Entry<K, V> sibling, Entry<K, V> node) {
-	int balance;
-	if (sibling == null)
-	    balance = -1 - node.rank;
-	else
-	    balance = sibling.rank - node.rank;
-	
-	while (balance != 1) { // balance == 1 means prior to delete parent was balanced, break;
-	    if (balance == 0) {// side of delete was taller, decrement and continue
-		parent.rank--;
-	    } else if (parent.left == sibling) {
-		int siblingBalance = rank(sibling.right) - rank(sibling.left);
-		if (siblingBalance > 0) {
-		    sibling.right.rank++;
-		    sibling.rank--;
-		    parent.rank -= 2;
-		    rotateLeft(sibling);
-		} else if (siblingBalance == 0) {
-		    sibling.rank++;
+    private boolean nodeIsTwoTwo(Entry<K, V> node) {
+	if (node == null || node.rank == 0)
+	    return false;
+	if (node.rank == 1) {
+	    if (node.left == null && node.right == null)
+		return true;
+	    else
+		return false;
+	} else 
+	    return (node.left.rank == node.right.rank && node.left.rank + 2 == node.rank);
+    }
+    
+    private void fixAfterDeleteWAVL(Entry<K, V> parent, Entry<K, V> sibling, Entry<K, V> node) {
+	int deltaRank = parent.rank - node.rank;
+	while (deltaRank == 3 || parent.rank == 1 && nodeIsTwoTwo(parent)) {
+	    int deltaRankSibling = (sibling == null) ? parent.rank + 1 : parent.rank - sibling.rank;
+	    if (deltaRankSibling == 2) {
+		parent.rank--; // demote and continue loop
+	    } else {
+		int deltaRankSiblingL = sibling.rank - rank(sibling.left);
+		int deltaRankSiblingR = sibling.rank - rank(sibling.right);
+		
+		if (deltaRankSiblingL == 2 && deltaRankSiblingR == 2) {
+		    // "double demote" in the orig. paper since both parent & sibling demote
 		    parent.rank--;
-		} else {
-		    parent.rank -= 2;
-		}
-		rotateRight(parent);
-		if (sibling.parent != null && sibling.parent.rank > sibling.rank + 2)
-		    sibling.rank++;
-		break;
-	    } else { // delete on left
-		int siblingBalance = rank(sibling.right) - rank(sibling.left);
-		if (siblingBalance < 0) {
-		    sibling.left.rank++;
 		    sibling.rank--;
-		    parent.rank -= 2;
-		    rotateRight(sibling);
-		} else if (siblingBalance == 0) {
-		    sibling.rank++;
-		    parent.rank--;
-		} else {
-		    parent.rank -= 2;
+		} else if (parent.right == sibling) { // delete was on the left
+		    if (deltaRankSiblingR == 1) { // single rotation
+			sibling.rank++;
+			parent.rank--;
+			if (sibling.left == null)
+			    parent.rank--; // demote parent again
+			rotateLeft(parent);
+		    } else { // double rotation
+			parent.rank -= 2;
+			sibling.rank--;
+			sibling.left.rank += 2;
+			rotateRight(sibling);
+			rotateLeft(parent);
+		    }
+		    break;
+		} else { // delete was on the right
+		    if (deltaRankSiblingL == 1) { // single rotation
+			sibling.rank++;
+			parent.rank--;
+			if (sibling.right == null)
+			    parent.rank--; // demote parent again
+			rotateRight(parent);
+		    } else { // double rotation
+			parent.rank -= 2;
+			sibling.rank--;
+			sibling.right.rank += 2;
+			rotateLeft(sibling);
+			rotateRight(parent);
+		    }
+		    break;
 		}
-		rotateLeft(parent);
-		if (sibling.parent != null && sibling.parent.rank > sibling.rank + 2)
-		    sibling.rank++;
-		break;
 	    }
-
+	    
 	    if (parent.parent == null)
 		return;
 	    node = parent;
 	    parent = parent.parent;
 	    sibling = (parent.left == node) ? parent.right : parent.left;
-	    balance = rank(sibling) - node.rank;
+	    deltaRank = parent.rank - node.rank;
 	}
     }
     
     /*
      * delete re-tracing via balance factor
      */
-    private void fixAfterDeletionAVL(Entry<K, V> parent, Entry<K, V> sibling, Entry<K, V> node) {
+    private void fixAfterDeleteAVL(Entry<K, V> parent, Entry<K, V> sibling, Entry<K, V> node) {
 	int balance;
 	if (sibling == null)  // remove sibling null check inside loop by testing once here
 	    balance = -1 - node.rank;
