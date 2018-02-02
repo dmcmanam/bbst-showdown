@@ -13,9 +13,9 @@ import java.util.Spliterator;
 /**
  * The WAVL tree combines elements of AVL & Red-black trees.
  * 
- * TODO I'm adding the delete method this week, should finish before Nov. 20th.
- * 
- * The RAVL tree is described in the 2016 paper "Deletion Without Rebalancing in Binary Search Trees"
+ * The WAVL tree deletion is described in the 2015 paper "Rank Balanced Trees"
+ * The related RAVL tree is described in the 2016 paper "Deletion Without Rebalancing in Binary Search Trees"
+ * both are available at:
  * http://sidsen.azurewebsites.net//
  * 
  * @author David McManamon
